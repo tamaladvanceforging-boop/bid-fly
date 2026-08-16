@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Users, Plus, Search, MoreHorizontal, Pencil, Trash2, Eye,
   Star, Mail, Phone, MapPin, Award, CheckCircle2, XCircle,
-  Building, Download, Upload, Filter, Tag
+  Building, Download, Upload, Filter, Tag,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Building2, ShieldCheck, Check
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -26,11 +27,18 @@ import {
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Separator } from '@renderer/components/ui/separator'
 import { cn, downloadFile } from '@shared/utils'
-import type { Vendor } from '@shared/types'
+import type { Vendor, VendorStatus } from '@shared/types'
 import { VendorCreateSchema, type VendorCreateInput, type PaginationParams } from '@shared/schemas'
 import { useAppStore } from '@renderer/stores/app.store'
 import { useActivityStore } from '@renderer/stores/activity.store'
 import { ConfirmDeleteDialog } from '@renderer/components/ui/ConfirmDeleteDialog'
+import { realtimeSync } from '@shared/utils/sync.service'
+
+const STATUS_BADGE: Record<VendorStatus, 'default' | 'success' | 'destructive' | 'secondary'> = {
+  active: 'success',
+  inactive: 'secondary',
+  blacklisted: 'destructive'
+}
 
 export default function VendorsPage() {
   const addToast = useAppStore(s => s.addToast)
@@ -38,7 +46,8 @@ export default function VendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [limit] = useState(25)
+  const [limit, setLimit] = useState(25)
+  const [jumpPageInput, setJumpPageInput] = useState('1')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [createOpen, setCreateOpen] = useState(false)
@@ -46,6 +55,15 @@ export default function VendorsPage() {
   const [selected, setSelected] = useState<Vendor | null>(null)
   const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null)
   const logActivity = useActivityStore(s => s.logActivity)
+
+  useEffect(() => {
+    const unsubscribe = realtimeSync.subscribe((msg) => {
+      if (msg.type === 'VENDOR_MUTATED') {
+        load()
+      }
+    })
+    return unsubscribe
+  }, [])
 
   const load = async () => {
     if (!window.bidfly?.vendor) return
@@ -61,7 +79,7 @@ export default function VendorsPage() {
 
   useEffect(() => {
     load()
-  }, [page, statusFilter])
+  }, [page, limit, statusFilter])
 
   useEffect(() => {
     const t = setTimeout(load, 300)
@@ -75,6 +93,7 @@ export default function VendorsPage() {
     const res = await window.bidfly.vendor.delete(id)
     if (res?.success) {
       logActivity('DELETE', 'Vendor', name, `Removed vendor/contractor profile from database`, id)
+      realtimeSync.broadcast('VENDOR_MUTATED')
       addToast({ title: 'Vendor removed', description: name, variant: 'success' })
       load()
     } else {
@@ -311,6 +330,69 @@ export default function VendorsPage() {
               </tbody>
             </table>
           </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-muted-foreground">
+                Showing {vendors.length ? (page - 1) * limit + 1 : 0}–{Math.min(page * limit, total)} of {total} vendors
+              </p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Per page:</span>
+                <Select value={String(limit)} onValueChange={v => { setLimit(Number(v)); setPage(1) }}>
+                  <SelectTrigger className="h-7 w-[70px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(1)} disabled={page === 1} title="First page">
+                  <ChevronsLeft className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} title="Previous page">
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+
+                <div className="flex items-center gap-1 px-2">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">Page {page} of {Math.max(1, Math.ceil(total / limit))}</span>
+                </div>
+
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))} disabled={page >= Math.ceil(total / limit)} title="Next page">
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(Math.max(1, Math.ceil(total / limit)))} disabled={page >= Math.ceil(total / limit)} title="Last page">
+                  <ChevronsRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+
+              <div className="hidden md:flex items-center gap-1.5 pl-2 border-l">
+                <span className="text-xs text-muted-foreground">Go to:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={Math.max(1, Math.ceil(total / limit))}
+                  value={jumpPageInput}
+                  onChange={e => setJumpPageInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      const p = parseInt(jumpPageInput, 10)
+                      const maxP = Math.max(1, Math.ceil(total / limit))
+                      if (!Number.isNaN(p) && p >= 1 && p <= maxP) {
+                        setPage(p)
+                      }
+                    }
+                  }}
+                  className="h-7 w-12 text-xs font-mono text-center p-1"
+                />
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -435,6 +517,7 @@ function VendorFormDialog({
         `${isEdit ? 'Updated' : 'Empaneled'} vendor/contractor (${formattedData.city || 'India'})`,
         isEdit ? initial?.id : (res.data as any)?.id
       )
+      realtimeSync.broadcast('VENDOR_MUTATED')
       addToast({
         title: isEdit ? 'Vendor updated' : 'Vendor added',
         description: data.name,

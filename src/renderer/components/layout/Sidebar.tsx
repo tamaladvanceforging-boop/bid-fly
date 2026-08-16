@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/tenders', label: 'Tenders', icon: Gavel, badge: true },
   { to: '/bids', label: 'Bids & Scoring', icon: FileText },
+  { to: '/competitors', label: 'Competitor Intelligence', icon: Users },
   { to: '/data-entry', label: 'Tender Datasheet', icon: Table2 },
   { to: '/vendors', label: 'Vendors', icon: Users },
   { to: '/reports', label: 'Analytics & Reports', icon: BarChart3 },

@@ -193,12 +193,20 @@ export const TenderService = {
       "SELECT COUNT(*) as c FROM tenders WHERE status = 'open' AND submission_deadline > ?"
     ).get(now) as { c: number }).c
 
+    const activeVendors = (db.prepare("SELECT COUNT(*) as c FROM vendors WHERE status = 'active'").get() as { c: number }).c
+    const wonBidValueRow = db.prepare("SELECT SUM(bid_value) as s FROM bids WHERE status = 'won'").get() as { s: number | null }
+
     return {
       totalTenders,
+      activeTenders: openTenders,
       openTenders,
+      submittedBids: activeBids,
       activeBids,
       wonBids,
       totalValue,
+      totalBidValue: totalValue,
+      wonBidValue: wonBidValueRow.s || 0,
+      activeVendors,
       pendingAlerts,
       upcomingDeadlines
     }

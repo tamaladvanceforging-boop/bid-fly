@@ -42,18 +42,18 @@ export function ConfirmDeleteDialog({
           </div>
         </DialogHeader>
 
-        <div className="py-3">
-          <p className="text-sm text-foreground leading-relaxed">
+        <div className="py-2 space-y-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             {description}
           </p>
           {itemName && (
-            <div className="mt-2.5 p-2.5 rounded-lg bg-muted/50 border font-mono text-xs font-semibold text-destructive truncate">
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 font-mono text-xs font-semibold text-destructive break-words leading-relaxed">
               {itemName}
             </div>
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2 sm:gap-2 pt-2">
           <Button
             type="button"
             variant="outline"

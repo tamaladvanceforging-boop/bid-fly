@@ -6,6 +6,8 @@ import {
   VendorService, AlertService, AutomationService,
   SettingsService, SheetService, ReportService
 } from '@main/services/vendor.service'
+import { AuthService } from '@main/services/auth.service'
+import { getEnvConfig } from '@shared/config/env.config'
 import { success, failure, tryCatch, tryCatchAsync } from '@main/services/base'
 import {
   TenderCreateSchema, TenderUpdateSchema,
@@ -18,7 +20,7 @@ import {
   type VendorCreateInput, type VendorUpdateInput,
   type PaginationParams
 } from '@shared/schemas'
-import type { IpcResponse } from '@shared/types'
+import type { IpcResponse, LoginInput, RegisterInput, User } from '@shared/types'
 
 function validate<T>(schema: z.ZodSchema<T>, input: unknown): { ok: true; data: T } | { ok: false; error: string } {
   const result = schema.safeParse(input)
@@ -43,6 +45,27 @@ function validatedHandler<I, O>(
 export function registerIpcHandlers(): void {
   ipcMain.handle('app:hello', () => success('BidFly server running'))
   ipcMain.handle('app:getStats', () => tryCatch(() => TenderService.getStats()))
+  ipcMain.handle('env:get', () => success(getEnvConfig()))
+
+  // Auth
+  ipcMain.handle('auth:login', (_e, input: LoginInput) =>
+    tryCatch(() => AuthService.login(input))
+  )
+  ipcMain.handle('auth:register', (_e, input: RegisterInput) =>
+    tryCatch(() => AuthService.register(input))
+  )
+  ipcMain.handle('auth:getProfile', (_e, id: string) =>
+    tryCatch(() => {
+      const p = AuthService.getProfile(id)
+      return p ? success(p) : failure('User profile not found')
+    })
+  )
+  ipcMain.handle('auth:updateProfile', (_e, id: string, updates: Partial<User>) =>
+    tryCatch(() => AuthService.updateProfile(id, updates))
+  )
+  ipcMain.handle('auth:changePassword', (_e, id: string, oldPass: string, newPass: string) =>
+    tryCatch(() => AuthService.changePassword(id, oldPass, newPass))
+  )
 
   // Tenders
   ipcMain.handle('tender:create', (_e, input) =>
