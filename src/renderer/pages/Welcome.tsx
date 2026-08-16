@@ -32,6 +32,7 @@ const DESIGNATION_OPTIONS = [
 ]
 
 import { LoginSchema, RegisterSchema, ResetPasswordSchema } from '@shared/schemas'
+import { ParticleBackground } from '@renderer/components/ui/ParticleBackground'
 
 function checkPasswordStrength(pass: string): { score: number; label: string; color: string } {
   if (!pass) return { score: 0, label: '', color: 'bg-muted' }
@@ -183,7 +184,8 @@ export default function WelcomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary/20 animate-fade-in-up">
+    <div className="relative min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary/20 animate-fade-in-up overflow-x-hidden">
+      <ParticleBackground />
       {/* Top Navbar */}
       <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -217,9 +219,15 @@ export default function WelcomePage() {
       <main className="max-w-7xl mx-auto px-6 py-12 flex-1 flex flex-col lg:flex-row items-center gap-12 justify-center">
         {/* Left: Branding & Pitch */}
         <div className="flex-1 space-y-6 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border bg-muted/40 text-xs font-semibold text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Universal Multi-Tenant & Multi-Entity Bidding Engine
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-md shadow-sm shadow-primary/10 transition-all hover:border-primary/50 group">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            </span>
+            <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+            <span className="text-xs font-bold tracking-wide text-primary">
+              Universal Multi-Tenant & Multi-Entity Bidding Engine
+            </span>
           </div>
 
           <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-[1.15]">
@@ -390,19 +398,19 @@ export default function WelcomePage() {
                 <TabsContent value="signup" className="space-y-4 m-0">
                   <form onSubmit={handleSignUp} className="space-y-3">
                     <div>
-                      <Label className="text-xs font-medium">Full Name</Label>
+                      <Label className="text-xs font-medium">Full Name (Min. 5 characters) *</Label>
                       <Input
                         required
                         value={fullName}
                         onChange={e => { setFullName(e.target.value); setFormErrors(prev => ({ ...prev, name: '' })) }}
-                        placeholder="Enter your full name (e.g. Tamal Roy Chowdhury)"
+                        placeholder="Enter your full name (minimum 5 letters, e.g. Tamal Roy Chowdhury)"
                         className={`text-xs ${formErrors.name ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                       />
                       {formErrors.name && <p className="text-[11px] text-destructive font-medium mt-1">{formErrors.name}</p>}
                     </div>
 
                     <div>
-                      <Label className="text-xs font-medium">Organization / Company Name</Label>
+                      <Label className="text-xs font-medium">Organization / Company Name (Min. 3 characters) *</Label>
                       <Input
                         required
                         value={companyName}

@@ -22,159 +22,6 @@ function formatCurrency(val: number): string {
   return `₹${val.toLocaleString('en-IN')}`
 }
 
-const INITIAL_COMPETITORS: Competitor[] = [
-  {
-    id: 'comp-1',
-    name: 'Larsen & Toubro Infrastructure',
-    gstin: '27AAACL1234F1Z5',
-    contactPerson: 'Rajesh Sharma (VP Sales)',
-    email: 'bidding@lntecc.com',
-    phone: '+91 22 6752 5656',
-    marketStrength: 'dominant',
-    typicalDiscountRate: 12.5,
-    historicalWinRate: 68,
-    bidsSubmittedCount: 42,
-    bidsWonCount: 28,
-    notes: 'Very aggressive on NHAI & CPWD mega infrastructure projects.',
-    createdAt: '2026-01-10T10:00:00Z',
-    updatedAt: '2026-02-01T12:00:00Z'
-  },
-  {
-    id: 'comp-2',
-    name: 'KPT Heavy Forgings Ltd',
-    gstin: '07AAACK9876E1Z2',
-    contactPerson: 'Amitabh Verma',
-    email: 'tenders@kptforgings.in',
-    phone: '+91 11 4150 9900',
-    marketStrength: 'high',
-    typicalDiscountRate: 8.4,
-    historicalWinRate: 52,
-    bidsSubmittedCount: 25,
-    bidsWonCount: 13,
-    notes: 'Primary competitor in GeM valve & forging supply categories.',
-    createdAt: '2026-01-15T11:00:00Z',
-    updatedAt: '2026-02-05T14:00:00Z'
-  },
-  {
-    id: 'comp-3',
-    name: 'Simplex Infrastructures Ltd',
-    gstin: '19AAACS4321D1Z9',
-    contactPerson: 'Siddharth Basu',
-    email: 'commercial@simplexinfra.com',
-    phone: '+91 33 2301 1000',
-    marketStrength: 'medium',
-    typicalDiscountRate: 15.2,
-    historicalWinRate: 41,
-    bidsSubmittedCount: 19,
-    bidsWonCount: 8,
-    notes: 'Quotes low prices but often disqualified on technical QCBS scores.',
-    createdAt: '2026-01-20T09:30:00Z',
-    updatedAt: '2026-02-10T16:00:00Z'
-  }
-]
-
-const INITIAL_COMPETITOR_BIDS: CompetitorBid[] = [
-  {
-    id: 'cb-1',
-    tenderId: 't-101',
-    tenderNumber: 'GEM/2026/B/892014',
-    tenderTitle: 'Supply of High-Pressure Alloy Steel Valve Forgings',
-    competitorId: 'comp-1',
-    competitorName: 'Larsen & Toubro Infrastructure',
-    quotedPrice: 48500000,
-    ourPrice: 47200000,
-    technicalScore: 94.5,
-    rank: 'L2',
-    isWinner: false,
-    priceVariancePercent: 2.75,
-    marginSpread: 1300000,
-    notes: 'L&T quoted ₹4.85 Cr vs Our winning quote ₹4.72 Cr.',
-    createdAt: '2026-02-01T10:00:00Z',
-    updatedAt: '2026-02-01T10:00:00Z'
-  },
-  {
-    id: 'cb-2',
-    tenderId: 't-101',
-    tenderNumber: 'GEM/2026/B/892014',
-    tenderTitle: 'Supply of High-Pressure Alloy Steel Valve Forgings',
-    competitorId: 'comp-2',
-    competitorName: 'KPT Heavy Forgings Ltd',
-    quotedPrice: 51200000,
-    ourPrice: 47200000,
-    technicalScore: 88.0,
-    rank: 'L3',
-    isWinner: false,
-    priceVariancePercent: 8.47,
-    marginSpread: 4000000,
-    notes: 'KPT quoted ₹5.12 Cr (+8.47% higher than our bid).',
-    createdAt: '2026-02-01T10:30:00Z',
-    updatedAt: '2026-02-01T10:30:00Z'
-  }
-]
-
-const INITIAL_BOQ_ITEMS: BOQItem[] = [
-  {
-    id: 'boq-1',
-    tenderId: 't-101',
-    groupName: 'Schedule A - High Pressure Valves',
-    itemCode: 'ITEM-1.01',
-    description: '500mm Forged Steel Gate Valve (Class 1500, High Temp)',
-    quantity: 25,
-    uom: 'Nos',
-    estimatedRate: 950000,
-    ourQuotedRate: 880000
-  },
-  {
-    id: 'boq-2',
-    tenderId: 't-101',
-    groupName: 'Schedule A - High Pressure Valves',
-    itemCode: 'ITEM-1.02',
-    description: '300mm Stainless Steel Check Valve (PN40 Flanged)',
-    quantity: 40,
-    uom: 'Nos',
-    estimatedRate: 420000,
-    ourQuotedRate: 395000
-  },
-  {
-    id: 'boq-3',
-    tenderId: 't-101',
-    groupName: 'Group B - Heavy Structural Forgings',
-    itemCode: 'BOQ-B01',
-    description: 'ASTM A350 LF2 Forged Carbon Steel Flanges (Heavy Duty)',
-    quantity: 120,
-    uom: 'MT',
-    estimatedRate: 185000,
-    ourQuotedRate: 172000
-  }
-]
-
-const INITIAL_ITEM_RATES: CompetitorItemRate[] = [
-  {
-    id: 'cir-1',
-    boqItemId: 'boq-1',
-    tenderId: 't-101',
-    competitorId: 'comp-1',
-    competitorName: 'Larsen & Toubro Infrastructure',
-    quotedUnitRate: 910000,
-    totalItemAmount: 22750000,
-    rateVariancePercent: 3.41,
-    isItemL1: false,
-    notes: 'L&T rate ₹9.10L vs Our rate ₹8.80L'
-  },
-  {
-    id: 'cir-2',
-    boqItemId: 'boq-1',
-    tenderId: 't-101',
-    competitorId: 'comp-2',
-    competitorName: 'KPT Heavy Forgings Ltd',
-    quotedUnitRate: 865000,
-    totalItemAmount: 21625000,
-    rateVariancePercent: -1.70,
-    isItemL1: true,
-    notes: 'KPT is Line Item L1 on 500mm Gate Valve'
-  }
-]
-
 export default function CompetitorsPage() {
   const { addToast } = useAppStore()
   const [tenders, setTenders] = useState<Tender[]>([])
@@ -182,9 +29,9 @@ export default function CompetitorsPage() {
   useEffect(() => {
     async function loadTenders() {
       try {
-        if ((window as any).api?.tenders?.list) {
-          const res = await (window as any).api.tenders.list({ limit: 100 })
-          if (res.success && res.data) setTenders(res.data)
+        if (window.bidfly?.tender?.list) {
+          const res = await window.bidfly.tender.list({ limit: 100 })
+          if (res?.success && res.data) setTenders(res.data.items || [])
         }
       } catch (err) {
         console.error('Failed to load tenders:', err)
@@ -193,10 +40,10 @@ export default function CompetitorsPage() {
     loadTenders()
   }, [])
 
-  const [competitors, setCompetitors] = useState<Competitor[]>(INITIAL_COMPETITORS)
-  const [competitorBids, setCompetitorBids] = useState<CompetitorBid[]>(INITIAL_COMPETITOR_BIDS)
-  const [boqItems, setBoqItems] = useState<BOQItem[]>(INITIAL_BOQ_ITEMS)
-  const [itemRates, setItemRates] = useState<CompetitorItemRate[]>(INITIAL_ITEM_RATES)
+  const [competitors, setCompetitors] = useState<Competitor[]>([])
+  const [competitorBids, setCompetitorBids] = useState<CompetitorBid[]>([])
+  const [boqItems, setBoqItems] = useState<BOQItem[]>([])
+  const [itemRates, setItemRates] = useState<CompetitorItemRate[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [strengthFilter, setStrengthFilter] = useState<string>('all')
   const [selectedGroup, setSelectedGroup] = useState<string>('all')
@@ -278,8 +125,8 @@ export default function CompetitorsPage() {
   const [compNotes, setCompNotes] = useState('')
 
   // Competitor Bid Form State
-  const [bidTenderId, setBidTenderId] = useState(tenders[0]?.id || '')
-  const [bidCompetitorId, setBidCompetitorId] = useState(INITIAL_COMPETITORS[0]?.id || '')
+  const [bidTenderId, setBidTenderId] = useState('')
+  const [bidCompetitorId, setBidCompetitorId] = useState('')
   const [bidQuotedPrice, setBidQuotedPrice] = useState('')
   const [bidOurPrice, setBidOurPrice] = useState('')
   const [bidTechScore, setBidTechScore] = useState('90')
@@ -710,49 +557,70 @@ export default function CompetitorsPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCompetitors.map(c => (
-              <Card key={c.id} className="border shadow-sm card-hover-glow flex flex-col justify-between">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <CardTitle className="text-base font-bold leading-snug">{c.name}</CardTitle>
-                      {c.gstin && <p className="text-[11px] text-muted-foreground font-mono mt-0.5">GSTIN: {c.gstin}</p>}
+          {filteredCompetitors.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="p-5 rounded-2xl bg-muted/30 border mb-4">
+                <Building2 className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+              </div>
+              <p className="font-semibold text-sm text-foreground">
+                {searchQuery || strengthFilter !== 'all' ? 'No competitors match your filters.' : 'No competitors registered yet.'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                {searchQuery || strengthFilter !== 'all'
+                  ? 'Try clearing the search or changing the strength filter.'
+                  : 'Click "Add Competitor" to register your first market competitor for rate intelligence tracking.'}
+              </p>
+              {!searchQuery && strengthFilter === 'all' && (
+                <Button size="sm" className="mt-4 font-semibold gap-1.5" onClick={() => setAddCompetitorOpen(true)}>
+                  <Plus className="h-4 w-4" /> Add First Competitor
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+              {filteredCompetitors.map(c => (
+                <Card key={c.id} className="border shadow-sm card-hover-glow flex flex-col justify-between overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-sm font-bold leading-snug truncate">{c.name}</CardTitle>
+                        {c.gstin && <p className="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">GSTIN: {c.gstin}</p>}
+                      </div>
+                      <Badge className={
+                        c.marketStrength === 'dominant' ? 'bg-destructive/15 text-destructive border-destructive/30 uppercase text-[10px] font-bold shrink-0' :
+                        c.marketStrength === 'high' ? 'bg-amber-500/15 text-amber-600 border-amber-500/30 uppercase text-[10px] font-bold shrink-0' :
+                        'bg-muted text-muted-foreground uppercase text-[10px] shrink-0'
+                      }>
+                        {c.marketStrength}
+                      </Badge>
                     </div>
-                    <Badge className={
-                      c.marketStrength === 'dominant' ? 'bg-destructive/15 text-destructive border-destructive/30 uppercase text-[10px] font-bold' :
-                      c.marketStrength === 'high' ? 'bg-amber-500/15 text-amber-600 border-amber-500/30 uppercase text-[10px] font-bold' :
-                      'bg-muted text-muted-foreground uppercase text-[10px]'
-                    }>
-                      {c.marketStrength}
-                    </Badge>
-                  </div>
-                </CardHeader>
+                  </CardHeader>
 
-                <CardContent className="space-y-3 pb-4">
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted/40 text-xs">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground">Typical Discount</p>
-                      <p className="font-bold text-foreground">{c.typicalDiscountRate}%</p>
+                  <CardContent className="space-y-3 pb-4">
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted/40 text-xs">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Typical Discount</p>
+                        <p className="font-bold text-foreground">{c.typicalDiscountRate}%</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Historical Win Rate</p>
+                        <p className="font-bold text-emerald-600">{c.historicalWinRate}%</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground">Historical Win Rate</p>
-                      <p className="font-bold text-emerald-600">{c.historicalWinRate}%</p>
-                    </div>
-                  </div>
 
-                  {c.contactPerson && (
-                    <div className="text-xs space-y-0.5">
-                      <p className="font-medium text-foreground">{c.contactPerson}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{c.email || c.phone}</p>
-                    </div>
-                  )}
+                    {c.contactPerson && (
+                      <div className="text-xs space-y-0.5">
+                        <p className="font-medium text-foreground truncate">{c.contactPerson}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{c.email || c.phone}</p>
+                      </div>
+                    )}
 
-                  {c.notes && <p className="text-[11px] text-muted-foreground italic line-clamp-2">{c.notes}</p>}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    {c.notes && <p className="text-[11px] text-muted-foreground italic line-clamp-2">{c.notes}</p>}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

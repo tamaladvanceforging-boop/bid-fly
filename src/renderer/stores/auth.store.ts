@@ -39,11 +39,7 @@ interface AuthState {
   setRememberMe: (val: boolean) => void
 }
 
-const DEFAULT_COMPANIES: CompanyEntity[] = [
-  { id: 'c1', code: 'AF', name: 'Advance Forging Pvt Ltd', color: 'bg-blue-500', isDefault: true },
-  { id: 'c2', code: 'AEC', name: 'Advance Engineering Corp', color: 'bg-emerald-500', isDefault: true },
-  { id: 'c3', code: 'LT', name: 'Larsen & Toubro Ltd (Client)', color: 'bg-violet-500' }
-]
+const DEFAULT_COMPANIES: CompanyEntity[] = []
 
 const SAVED_AUTH_KEY = 'bidfly_auth_session'
 const SAVED_COMPANIES_KEY = 'bidfly_companies_list'
@@ -52,7 +48,12 @@ const SAVED_REMEMBER_KEY = 'bidfly_remember_creds'
 function getInitialCompanies(): CompanyEntity[] {
   try {
     const raw = localStorage.getItem(SAVED_COMPANIES_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      // Filter out legacy dummy companies
+      const cleaned = parsed.filter((c: CompanyEntity) => c.code !== 'AF' && c.code !== 'AEC' && c.code !== 'LT')
+      return cleaned
+    }
   } catch {}
   return DEFAULT_COMPANIES
 }

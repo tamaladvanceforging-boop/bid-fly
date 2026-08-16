@@ -231,7 +231,7 @@ const LOCAL_STORAGE_KEY = 'bidfly_tender_datasheet_rows'
 
 export default function TenderManagementSheet() {
   const addToast = useAppStore(s => s.addToast)
-  const { companies, addCompany } = useAuthStore()
+  const { companies, addCompany, removeCompany } = useAuthStore()
   const { activities, logActivity } = useActivityStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -241,7 +241,7 @@ export default function TenderManagementSheet() {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY)
       if (saved) return JSON.parse(saved)
     } catch {}
-    return INITIAL_EXCEL_ROWS
+    return []
   })
 
   // Slicer Filters
@@ -1077,37 +1077,70 @@ export default function TenderManagementSheet() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: Add New Client / Company Profile */}
+      {/* Dialog: Add New Client / Company Profile & Management */}
       <Dialog open={addCompanyOpen} onOpenChange={setAddCompanyOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Company / Client Profile</DialogTitle>
+            <DialogTitle>Manage Companies / Client Profiles</DialogTitle>
             <DialogDescription>
-              Add multiple entities or client accounts for agency and freelance bidding.
+              Add multiple entities or remove existing profiles.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div>
-              <Label>Company Short Code (e.g. AF, AEC, LT, GE) *</Label>
-              <Input
-                value={newCompCode}
-                onChange={e => setNewCompCode(e.target.value)}
-                placeholder="e.g. GE"
-                className="uppercase font-mono"
-              />
+            <div className="p-3 rounded-xl bg-muted/40 border space-y-3">
+              <p className="text-xs font-bold text-foreground">+ Add New Company</p>
+              <div>
+                <Label>Company Short Code *</Label>
+                <Input
+                  value={newCompCode}
+                  onChange={e => setNewCompCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. TCS"
+                  maxLength={6}
+                  className="uppercase font-mono text-xs h-8"
+                />
+              </div>
+              <div>
+                <Label>Company Full Name *</Label>
+                <Input
+                  value={newCompName}
+                  onChange={e => setNewCompName(e.target.value)}
+                  placeholder="e.g. Tata Consultancy Services"
+                  className="text-xs h-8"
+                />
+              </div>
+              <Button size="sm" className="w-full h-8 text-xs font-semibold" onClick={handleAddNewCompany}>
+                Save Company
+              </Button>
             </div>
-            <div>
-              <Label>Company Full Name *</Label>
-              <Input
-                value={newCompName}
-                onChange={e => setNewCompName(e.target.value)}
-                placeholder="e.g. General Electric India Pvt Ltd"
-              />
+
+            {/* List of existing companies */}
+            <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Registered Companies ({companies.length})</p>
+              {companies.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2 text-center">No companies added yet.</p>
+              ) : (
+                companies.map(c => (
+                  <div key={c.id} className="flex items-center justify-between p-2 rounded-lg border bg-card/60">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Badge variant="outline" className="font-mono font-bold text-xs">{c.code}</Badge>
+                      <span className="text-xs truncate">{c.name}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-destructive hover:bg-destructive/10 shrink-0"
+                      onClick={() => removeCompany(c.id)}
+                      title="Delete Company"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setAddCompanyOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddNewCompany}>Save Company</Button>
+            <Button variant="ghost" size="sm" onClick={() => setAddCompanyOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

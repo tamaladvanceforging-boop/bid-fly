@@ -237,8 +237,8 @@ export default function AutomationPage() {
               <Activity className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Automated Executions Today</p>
-              <p className="text-2xl font-bold mt-0.5">24 Cycles</p>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Automated Daemon Status</p>
+              <p className="text-lg font-bold mt-0.5">{rules.filter(r => r.isEnabled).length > 0 ? 'Active & Watching' : 'Standby / Idle'}</p>
             </div>
           </CardContent>
         </Card>
@@ -249,8 +249,8 @@ export default function AutomationPage() {
               <Clock className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Next Scheduled Trigger</p>
-              <p className="text-sm font-semibold mt-1">Today at 8:00 PM</p>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Scheduled Triggers</p>
+              <p className="text-sm font-semibold mt-1">{rules.filter(r => r.isEnabled).length > 0 ? `${rules.filter(r => r.isEnabled).length} active rule(s)` : 'No active schedule'}</p>
             </div>
           </CardContent>
         </Card>
@@ -265,57 +265,72 @@ export default function AutomationPage() {
           </div>
 
           <div className="space-y-3">
-            {rules.map(r => (
-              <Card key={r.id} className={cn('transition-all', !r.isEnabled ? 'opacity-70 bg-muted/20' : '')}>
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-sm">{r.name}</p>
-                      <Badge variant={r.isEnabled ? 'success' : 'secondary'} className="text-[10px]">
-                        {r.isEnabled ? 'Active' : 'Paused'}
-                      </Badge>
-                      <Badge variant="outline" className="font-mono text-[10px]">
-                        {r.trigger === 'cron' ? `CRON: ${r.cronSchedule}` : 'MANUAL'}
-                      </Badge>
-                    </div>
-                    {r.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{r.description}</p>}
-                    <div className="flex items-center gap-4 text-[11px] text-muted-foreground pt-0.5">
-                      <span>Last executed: {r.lastRun ? formatRelativeTime(r.lastRun) : 'Never'}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRunNow(r)}
-                      disabled={executingId === r.id}
-                      className="text-xs h-8"
-                    >
-                      <Play className={cn('h-3.5 w-3.5 mr-1.5', executingId === r.id ? 'animate-spin' : '')} />
-                      {executingId === r.id ? 'Running...' : 'Run Now'}
-                    </Button>
-                    <Switch checked={r.isEnabled} onCheckedChange={() => handleToggle(r)} />
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openCreateDialog(r)}>
-                          <Pencil className="h-4 w-4 mr-2" /> Edit rule
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setRuleToDelete(r)}>
-                          <Trash2 className="h-4 w-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardContent>
+            {rules.length === 0 ? (
+              <Card className="border-dashed p-8 text-center bg-card/40">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-3">
+                  <Zap className="h-6 w-6" />
+                </div>
+                <h4 className="text-sm font-bold">No Automation Rules Configured</h4>
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                  Set up automated portal syncing, deadline warnings, and quotation exports to run automatically.
+                </p>
+                <Button size="sm" onClick={() => openCreateDialog()} className="mt-4 text-xs font-semibold">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Create First Rule
+                </Button>
               </Card>
-            ))}
+            ) : (
+              rules.map(r => (
+                <Card key={r.id} className={cn('transition-all', !r.isEnabled ? 'opacity-70 bg-muted/20' : '')}>
+                  <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-sm">{r.name}</p>
+                        <Badge variant={r.isEnabled ? 'success' : 'secondary'} className="text-[10px]">
+                          {r.isEnabled ? 'Active' : 'Paused'}
+                        </Badge>
+                        <Badge variant="outline" className="font-mono text-[10px]">
+                          {r.trigger === 'cron' ? `CRON: ${r.cronSchedule}` : 'MANUAL'}
+                        </Badge>
+                      </div>
+                      {r.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{r.description}</p>}
+                      <div className="flex items-center gap-4 text-[11px] text-muted-foreground pt-0.5">
+                        <span>Last executed: {r.lastRun ? formatRelativeTime(r.lastRun) : 'Never'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRunNow(r)}
+                        disabled={executingId === r.id}
+                        className="text-xs h-8"
+                      >
+                        <Play className={cn('h-3.5 w-3.5 mr-1.5', executingId === r.id ? 'animate-spin' : '')} />
+                        {executingId === r.id ? 'Running...' : 'Run Now'}
+                      </Button>
+                      <Switch checked={r.isEnabled} onCheckedChange={() => handleToggle(r)} />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openCreateDialog(r)}>
+                            <Pencil className="h-4 w-4 mr-2" /> Edit rule
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setRuleToDelete(r)}>
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
 

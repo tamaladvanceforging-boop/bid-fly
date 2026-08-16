@@ -15,6 +15,7 @@ import { Badge } from '@renderer/components/ui/badge'
 import { useAppStore, useThemeStore } from '@renderer/stores/app.store'
 import { useAuthStore } from '@renderer/stores/auth.store'
 import { realtimeSync } from '@shared/utils/sync.service'
+import { PasswordRegex } from '@shared/schemas'
 
 export default function SettingsPage() {
   const { settings, fetchSettings, updateSettings, addToast } = useAppStore()
@@ -79,6 +80,10 @@ export default function SettingsPage() {
   }, [user])
 
   const handleSaveAll = async () => {
+    if (user && profileName.trim().length < 5) {
+      addToast({ title: 'Validation Error', description: 'Full name must be at least 5 characters long.', variant: 'error' })
+      return
+    }
     setIsSaving(true)
     await updateSettings({
       currency,
@@ -96,7 +101,7 @@ export default function SettingsPage() {
     })
 
     if (user) {
-      await updateProfileAsync({ name: profileName, email: profileEmail, designation: profileDesignation })
+      await updateProfileAsync({ name: profileName.trim(), email: profileEmail.trim(), designation: profileDesignation })
     }
 
     setIsSaving(false)
@@ -125,6 +130,14 @@ DATABASE_URL=${dbPath}
       addToast({ title: 'Password error', description: 'Please fill out both old and new password fields.', variant: 'error' })
       return
     }
+    if (newPassword.length < 8 || !PasswordRegex.test(newPassword)) {
+      addToast({
+        title: 'Weak Password',
+        description: 'New password must be at least 8 characters and contain uppercase, lowercase, number, and special character (@$!%*?&#).',
+        variant: 'error'
+      })
+      return
+    }
     try {
       if (window.bidfly?.auth?.changePassword && user) {
         const res = await window.bidfly.auth.changePassword(user.id, oldPassword, newPassword)
@@ -140,8 +153,8 @@ DATABASE_URL=${dbPath}
         setOldPassword('')
         setNewPassword('')
       }
-    } catch (err: any) {
-      addToast({ title: 'Password error', description: err.message || 'Failed to change password.', variant: 'error' })
+    } catch {
+      addToast({ title: 'Password error', description: 'An error occurred while updating password.', variant: 'error' })
     }
   }
 

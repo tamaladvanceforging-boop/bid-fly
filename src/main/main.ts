@@ -17,9 +17,10 @@ let win: BrowserWindow | null = null
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createWindow(): void {
+  const isWin = process.platform === 'win32'
   const iconPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'icon.png')
-    : path.join(__dirname, '../../public/icon.png')
+    ? path.join(process.resourcesPath, isWin ? 'icon.ico' : 'icon.png')
+    : path.join(__dirname, isWin ? '../../build/icon.ico' : '../../public/icon.png')
 
   win = new BrowserWindow({
     title: 'BidFly Enterprise Suite',
@@ -64,6 +65,10 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  // Set AppUserModelId for correct Windows taskbar & shell icon association
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.tamalroychowdhury.bidfly')
+  }
   try {
     initDatabase()
   } catch (err) {

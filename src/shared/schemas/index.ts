@@ -26,8 +26,11 @@ export const LoginSchema = z.object({
 })
 
 export const RegisterSchema = z.object({
-  name: z.string().min(2, 'Full name must be at least 2 characters'),
-  companyName: z.string().min(2, 'Organization / Company name must be at least 2 characters'),
+  name: z
+    .string()
+    .min(5, 'Full name must be at least 5 characters long')
+    .regex(/^[a-zA-Z\s.'-]+$/, 'Full name must contain letters only (minimum 5 characters)'),
+  companyName: z.string().min(3, 'Organization / Company name must be at least 3 characters'),
   email: z.string().min(1, 'Email is required').email('Please enter a valid work email address'),
   designation: z.string().min(2, 'Please select or enter your corporate designation'),
   role: z.string().optional(),

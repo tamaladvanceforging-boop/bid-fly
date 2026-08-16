@@ -173,6 +173,18 @@ export function initDatabase(): Database.Database {
     db.exec(`ALTER TABLE users ADD COLUMN designation TEXT;`)
   } catch {}
 
+  // Automatically purge legacy sample/demo rows from existing databases
+  try {
+    db.exec(`
+      DELETE FROM tenders WHERE tender_number IN ('CPWD/2026/CIVIL/8841', 'IRCTC/IT/CLOUD/2026-03', 'NHAI/BOT/HWY-44/PKG-3');
+      DELETE FROM bids WHERE bid_number LIKE 'BID-2026-%' OR bidder_name IN ('Advance Forging Pvt Ltd', 'Larsen & Toubro Ltd', 'KPT Heavy Forgings', 'Simplex Infrastructures Ltd');
+      DELETE FROM vendors WHERE registration_number IN ('REG-2026-001', 'REG-2026-002', 'REG-2026-003') OR id LIKE 'v-%';
+      DELETE FROM alerts;
+      DELETE FROM automation_rules WHERE id LIKE 'rule-%' OR name LIKE 'Daily GeM%' OR name LIKE 'Weekly%Sync%';
+      DELETE FROM data_entry_sheets WHERE name LIKE '%Sample%' OR name LIKE '%Demo%';
+    `)
+  } catch {}
+
   seedDatabase(db)
 
   return db

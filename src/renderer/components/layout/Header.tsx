@@ -1,8 +1,9 @@
-import { Bell, Menu, Moon, Sun, Search, User, Settings, Building2, LogOut, Check, Wifi, WifiOff, RefreshCw } from 'lucide-react'
+import { Bell, Menu, Moon, Sun, Search, User, Settings, Building2, LogOut, Check, Wifi, WifiOff, RefreshCw, Trash2, Plus } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
+import { Label } from '@renderer/components/ui/label'
 import { Badge } from '@renderer/components/ui/badge'
 import { Avatar, AvatarFallback } from '@renderer/components/ui/avatar'
 import {
@@ -10,6 +11,10 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
   DropdownMenuGroup
 } from '@renderer/components/ui/dropdown-menu'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  DialogFooter
+} from '@renderer/components/ui/dialog'
 import {
   Popover, PopoverContent, PopoverTrigger
 } from '@renderer/components/ui/popover'
@@ -43,11 +48,31 @@ export function Header() {
   const { theme, setTheme, resolvedTheme } = useThemeStore()
   const setMobile = useUIStore(s => s.setMobileSidebarOpen)
   const { alerts, unreadCount, fetchAlerts, markAlertRead, markAllAlertsRead, addToast } = useAppStore()
-  const { user, companies, activeCompanyCode, setActiveCompanyCode, logout } = useAuthStore()
+  const { user, companies, activeCompanyCode, setActiveCompanyCode, addCompany, removeCompany, logout } = useAuthStore()
 
   const [alertsOpen, setAlertsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [syncState, setSyncState] = useState<{ status: NetworkSyncStatus; pendingCount: number }>({ status: 'online', pendingCount: 0 })
+  const [companyModalOpen, setCompanyModalOpen] = useState(false)
+  const [newCompanyCode, setNewCompanyCode] = useState('')
+  const [newCompanyName, setNewCompanyName] = useState('')
+
+  const handleAddCompany = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCompanyCode.trim() || !newCompanyName.trim()) return
+    addCompany(newCompanyCode.trim(), newCompanyName.trim())
+    setNewCompanyCode('')
+    setNewCompanyName('')
+    addToast({ title: 'Company Added', description: `${newCompanyName} has been registered.`, variant: 'success' })
+  }
+
+  const handleDeleteCompany = (id: string, name: string, code: string) => {
+    removeCompany(id)
+    if (activeCompanyCode === code) {
+      setActiveCompanyCode('ALL')
+    }
+    addToast({ title: 'Company Removed', description: `${name} has been removed.`, variant: 'default' })
+  }
 
   useEffect(() => {
     const unsub = realtimeSync.subscribeStatus((status, pendingCount) => {
@@ -125,16 +150,22 @@ export function Header() {
               {activeCompanyCode === 'ALL' && <Check className="h-3.5 w-3.5 text-primary" />}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            {companies.map(c => (
-              <DropdownMenuItem key={c.id} onClick={() => setActiveCompanyCode(c.code)} className="text-xs">
-                <span className="font-bold mr-1.5">{c.code}:</span>
-                <span className="flex-1 truncate">{c.name}</span>
-                {activeCompanyCode === c.code && <Check className="h-3.5 w-3.5 text-primary" />}
-              </DropdownMenuItem>
-            ))}
+            {companies.length === 0 ? (
+              <div className="px-2 py-3 text-center text-xs text-muted-foreground">
+                No companies created yet.
+              </div>
+            ) : (
+              companies.map(c => (
+                <DropdownMenuItem key={c.id} onClick={() => setActiveCompanyCode(c.code)} className="text-xs">
+                  <span className="font-bold mr-1.5">{c.code}:</span>
+                  <span className="flex-1 truncate">{c.name}</span>
+                  {activeCompanyCode === c.code && <Check className="h-3.5 w-3.5 text-primary" />}
+                </DropdownMenuItem>
+              ))
+            )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/data-entry')} className="text-xs text-primary font-medium">
-              + Manage Companies / Datasheet
+            <DropdownMenuItem onClick={() => setCompanyModalOpen(true)} className="text-xs text-primary font-medium cursor-pointer">
+              <Plus className="h-3.5 w-3.5 mr-1.5" /> Manage & Add Companies
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -304,6 +335,85 @@ export function Header() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Manage Companies Dialog */}
+      <Dialog open={companyModalOpen} onOpenChange={setCompanyModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
+              <DialogTitle className="text-base font-bold">Manage Company Entities</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs">
+              Add your organizations or remove entities. Switch between them anytime from the header.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Add New Company Form */}
+          <form onSubmit={handleAddCompany} className="p-3.5 rounded-xl bg-muted/40 border space-y-3">
+            <p className="text-xs font-bold text-foreground">+ Register New Company</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Label className="text-[11px] text-muted-foreground">Short Code</Label>
+                <Input
+                  placeholder="e.g. AF"
+                  value={newCompanyCode}
+                  onChange={e => setNewCompanyCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                  className="h-8 text-xs font-mono uppercase font-bold"
+                  required
+                />
+              </div>
+              <div className="col-span-2">
+                <Label className="text-[11px] text-muted-foreground">Company Full Name</Label>
+                <Input
+                  placeholder="e.g. Advance Forging Pvt Ltd"
+                  value={newCompanyName}
+                  onChange={e => setNewCompanyName(e.target.value)}
+                  className="h-8 text-xs"
+                  required
+                />
+              </div>
+            </div>
+            <Button type="submit" size="sm" className="w-full h-8 text-xs font-semibold gap-1.5">
+              <Plus className="h-3.5 w-3.5" /> Add Company
+            </Button>
+          </form>
+
+          {/* Existing Companies List */}
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Registered Companies ({companies.length})</p>
+            {companies.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-3 text-center">No companies registered yet. Create one above.</p>
+            ) : (
+              companies.map(c => (
+                <div key={c.id} className="flex items-center justify-between p-2.5 rounded-lg border bg-card/60 hover:bg-muted/40 transition-colors">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Badge variant="outline" className="font-mono font-bold text-xs shrink-0">{c.code}</Badge>
+                    <span className="text-xs font-medium truncate">{c.name}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
+                    onClick={() => handleDeleteCompany(c.id, c.name, c.code)}
+                    title="Delete Company"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" size="sm" onClick={() => setCompanyModalOpen(false)}>
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   )
 }

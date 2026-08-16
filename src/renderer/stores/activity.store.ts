@@ -30,35 +30,7 @@ interface ActivityState {
 
 const STORAGE_KEY = 'bidfly_activity_logs'
 
-const INITIAL_LOGS: ActivityLog[] = [
-  {
-    id: 'act-1',
-    action: 'CREATE',
-    entityType: 'Datasheet',
-    entityTitle: 'GEM/2026/B/7793438 - Turbine Integral Piping',
-    details: 'Submitted bid quote of ₹2,84,00,000 for BHEL',
-    userName: 'Tamal Roy Chowdhury',
-    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString()
-  },
-  {
-    id: 'act-2',
-    action: 'UPDATE',
-    entityType: 'Tender',
-    entityTitle: 'CPWD Multi-Specialty Hospital Block',
-    details: 'Status changed from Draft to Open',
-    userName: 'Tamal Roy Chowdhury',
-    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString()
-  },
-  {
-    id: 'act-3',
-    action: 'CREATE',
-    entityType: 'Vendor',
-    entityTitle: 'Larsen & Toubro Ltd (L&T Heavy Civil)',
-    details: 'Empaneled as Tier-1 EPC Vendor with 4.9 rating',
-    userName: 'Tamal Roy Chowdhury',
-    timestamp: new Date(Date.now() - 1000 * 60 * 240).toISOString()
-  }
-]
+const INITIAL_LOGS: ActivityLog[] = []
 
 function getInitialLogs(): ActivityLog[] {
   try {

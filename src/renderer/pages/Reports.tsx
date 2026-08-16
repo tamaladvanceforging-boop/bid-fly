@@ -55,7 +55,8 @@ export default function ReportsPage() {
   const monthlyData = useMemo(() => {
     const map = new Map<string, { month: string; published: number; submitted: number; value: number }>()
     filteredTenders.forEach(t => {
-      const m = t.publishDate.slice(0, 7)
+      const m = t.publishDate ? t.publishDate.slice(0, 7) : ''
+      if (!m) return
       const curr = map.get(m) || { month: m, published: 0, submitted: 0, value: 0 }
       curr.published += 1
       if (t.status === 'submitted' || t.status === 'awarded') curr.submitted += 1
@@ -64,18 +65,16 @@ export default function ReportsPage() {
     })
     const res = Array.from(map.values())
     res.sort((a, b) => a.month.localeCompare(b.month))
-    return res.length > 0 ? res : [
-      { month: '2026-01', published: 4, submitted: 3, value: 45000000 },
-      { month: '2026-02', published: 7, submitted: 5, value: 98000000 },
-      { month: '2026-03', published: 12, submitted: 9, value: 215000000 }
-    ]
+    return res
   }, [filteredTenders])
 
   // Category distribution aggregation
   const categoryData = useMemo(() => {
     const map = new Map<string, number>()
     filteredTenders.forEach(t => {
-      map.set(t.category, (map.get(t.category) || 0) + 1)
+      if (t.category) {
+        map.set(t.category, (map.get(t.category) || 0) + 1)
+      }
     })
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }))
   }, [filteredTenders])
@@ -85,12 +84,12 @@ export default function ReportsPage() {
     const won = bids.filter(b => b.status === 'won' || b.isWinning).length
     const lost = bids.filter(b => b.status === 'lost').length
     const pending = bids.filter(b => b.status === 'pending').length
-    const total = bids.length || 1
+    const totalDecided = won + lost
     return {
       won,
       lost,
       pending,
-      winRate: ((won / (won + lost || 1)) * 100).toFixed(1),
+      winRate: totalDecided > 0 ? ((won / totalDecided) * 100).toFixed(1) : '0.0',
       totalValue: tenders.reduce((acc, t) => acc + (t.value || 0), 0)
     }
   }, [bids, tenders])
@@ -183,7 +182,7 @@ export default function ReportsPage() {
           <CardContent className="p-5">
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Empaneled Partners</p>
             <p className="text-2xl font-bold text-blue-500 mt-1">{vendors.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Across 12 technical categories</p>
+            <p className="text-xs text-muted-foreground mt-1">Across {categoryData.length} technical categories</p>
           </CardContent>
         </Card>
         <Card>
@@ -202,17 +201,23 @@ export default function ReportsPage() {
             <CardDescription>Monthly comparison of identified tenders vs submitted bids</CardDescription>
           </CardHeader>
           <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
-                <XAxis dataKey="month" className="text-xs" axisLine={false} tickLine={false} />
-                <YAxis className="text-xs" axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend />
-                <Bar dataKey="published" name="Tenders Published" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="submitted" name="Bids Submitted" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {monthlyData.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+                No monthly trend records available yet
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
+                  <XAxis dataKey="month" className="text-xs" axisLine={false} tickLine={false} />
+                  <YAxis className="text-xs" axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Bar dataKey="published" name="Tenders Published" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="submitted" name="Bids Submitted" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -260,19 +265,27 @@ export default function ReportsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredTenders.slice(0, 5).map(t => (
-                <tr key={t.id} className="border-b last:border-0 hover:bg-muted/40 transition-colors">
-                  <td className="py-3.5 px-4 font-mono text-xs font-semibold">{t.tenderNumber}</td>
-                  <td className="py-3.5 px-4 font-medium max-w-[280px] truncate">{t.title}</td>
-                  <td className="py-3.5 px-4 text-muted-foreground">{t.organization}</td>
-                  <td className="py-3.5 px-4 text-right font-bold text-primary">{formatCurrency(t.value, t.currency)}</td>
-                  <td className="py-3.5 px-4">
-                    <Badge variant={t.status === 'open' ? 'success' : t.status === 'awarded' ? 'default' : 'secondary'} className="capitalize">
-                      {t.status}
-                    </Badge>
+              {filteredTenders.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-muted-foreground text-sm">
+                    No active opportunities in pipeline.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredTenders.slice(0, 5).map(t => (
+                  <tr key={t.id} className="border-b last:border-0 hover:bg-muted/40 transition-colors">
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold">{t.tenderNumber}</td>
+                    <td className="py-3.5 px-4 font-medium max-w-[280px] truncate">{t.title}</td>
+                    <td className="py-3.5 px-4 text-muted-foreground">{t.organization}</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-primary">{formatCurrency(t.value, t.currency)}</td>
+                    <td className="py-3.5 px-4">
+                      <Badge variant={t.status === 'open' ? 'success' : t.status === 'awarded' ? 'default' : 'secondary'} className="capitalize">
+                        {t.status}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </CardContent>
