@@ -14,7 +14,9 @@
     "build:portable": "tsc && vite build && electron-builder --win portable",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "start": "electron ."
+    "start": "electron .",
+    "rebuild": "electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -71,6 +73,7 @@
     "appId": "com.tamalroychowdhury.bidfly",
     "productName": "BidFly",
     "copyright": "Copyright © 2026 Tamal Roy Chowdhury",
+    "icon": "build/icon.ico",
     "npmRebuild": false,
     "forceCodeSigning": false,
     "directories": {
@@ -81,6 +84,7 @@
       "dist/**/*"
     ],
     "win": {
+      "icon": "build/icon.ico",
       "signAndEditExecutable": false,
       "requestedExecutionLevel": "asInvoker",
       "legalTrademarks": "BidFly by Tamal Roy Chowdhury",
@@ -98,7 +102,7 @@
           ]
         }
       ],
-      "artifactName": "${productName}-${version}-${target}.${ext}"
+      "artifactName": "${productName}-v${version}-Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -107,7 +111,10 @@
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "BidFly"
+      "shortcutName": "BidFly",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
     },
     "portable": {
       "artifactName": "BidFly-v1.0.0-Portable.exe",

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Trophy, Plus, Search, Filter, MoreHorizontal, Pencil, Trash2, Eye,
-  CheckCircle2, XCircle, Clock, Award, Download, Building2, Gavel, Percent
+  CheckCircle2, XCircle, Clock, Award, Download, Building2, Gavel, Percent,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -30,6 +31,8 @@ import { BidCreateSchema, type BidCreateInput, type PaginationParams } from '@sh
 import { useAppStore } from '@renderer/stores/app.store'
 import { useActivityStore } from '@renderer/stores/activity.store'
 import { ConfirmDeleteDialog } from '@renderer/components/ui/ConfirmDeleteDialog'
+import { realtimeSync } from '@shared/utils/sync.service'
+import { ExportMenu } from '@renderer/components/ui/export-menu'
 
 const STATUS_BADGE: Record<BidStatus, 'default' | 'success' | 'destructive' | 'secondary' | 'warning'> = {
   pending: 'warning',
@@ -46,7 +49,8 @@ export default function BidsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [limit] = useState(25)
+  const [limit, setLimit] = useState(25)
+  const [jumpPageInput, setJumpPageInput] = useState('1')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [tenderFilter, setTenderFilter] = useState<string>('all')
@@ -55,6 +59,16 @@ export default function BidsPage() {
   const [selected, setSelected] = useState<Bid | null>(null)
   const [bidToDelete, setBidToDelete] = useState<Bid | null>(null)
   const [summary, setSummary] = useState<{ total: number; won: number; lost: number; pending: number; totalValue: number; wonValue: number } | null>(null)
+
+  // Real-time broadcast sync listener
+  useEffect(() => {
+    const unsubscribe = realtimeSync.subscribe((msg) => {
+      if (msg.type === 'BID_MUTATED' || msg.type === 'TENDER_MUTATED') {
+        load()
+      }
+    })
+    return unsubscribe
+  }, [])
 
   const load = async () => {
     if (!window.bidfly?.bid) return
@@ -79,7 +93,7 @@ export default function BidsPage() {
 
   useEffect(() => {
     load()
-  }, [page, statusFilter, tenderFilter])
+  }, [page, limit, statusFilter, tenderFilter])
 
   useEffect(() => {
     const t = setTimeout(load, 300)
@@ -95,6 +109,7 @@ export default function BidsPage() {
     const res = await window.bidfly.bid.delete(id)
     if (res?.success) {
       logActivity('DELETE', 'Bid', bidNumber, `Deleted proposal for ${bidToDelete.bidderName}`, id)
+      realtimeSync.broadcast('BID_MUTATED')
       addToast({ title: 'Bid deleted', description: bidNumber, variant: 'success' })
       load()
     } else {
@@ -140,11 +155,22 @@ export default function BidsPage() {
             Track competitor and partner proposals, score matrices & win/loss outcomes
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-2" /> Export CSV
-          </Button>
-          <Button size="sm" onClick={() => { setSelected(null); setCreateOpen(true) }}>
+        <div className="flex gap-2 items-center">
+          <ExportMenu
+            title="Bids & Evaluations Master Directory"
+            columns={[
+              { header: 'Bid Number', key: 'bidNumber' },
+              { header: 'Bidder Name', key: 'bidderName' },
+              { header: 'Quoted Bid Value', key: 'bidValue', formatter: (v: number) => formatCurrency(v) },
+              { header: 'Status', key: 'status', formatter: (v: string) => v.toUpperCase() },
+              { header: 'Tech Score', key: 'technicalScore', formatter: (v: number) => v ? v.toString() : '-' },
+              { header: 'Financial Score', key: 'financialScore', formatter: (v: number) => v ? v.toString() : '-' },
+              { header: 'Is Winner (L1)', key: 'isWinning', formatter: (v: boolean) => v ? 'YES' : 'NO' },
+              { header: 'Submission Date', key: 'submissionDate', formatter: (v: string) => formatDate(v) }
+            ]}
+            data={bids}
+          />
+          <Button size="sm" onClick={() => { setSelected(null); setCreateOpen(true) }} className="cursor-pointer font-bold">
             <Plus className="h-4 w-4 mr-2" /> Submit / Record Bid
           </Button>
         </div>
@@ -339,6 +365,69 @@ export default function BidsPage() {
               </tbody>
             </table>
           </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-muted-foreground">
+                Showing {bids.length ? (page - 1) * limit + 1 : 0}–{Math.min(page * limit, total)} of {total} proposals
+              </p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Per page:</span>
+                <Select value={String(limit)} onValueChange={v => { setLimit(Number(v)); setPage(1) }}>
+                  <SelectTrigger className="h-7 w-[70px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(1)} disabled={page === 1} title="First page">
+                  <ChevronsLeft className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} title="Previous page">
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+
+                <div className="flex items-center gap-1 px-2">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">Page {page} of {Math.max(1, Math.ceil(total / limit))}</span>
+                </div>
+
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))} disabled={page >= Math.ceil(total / limit)} title="Next page">
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(Math.max(1, Math.ceil(total / limit)))} disabled={page >= Math.ceil(total / limit)} title="Last page">
+                  <ChevronsRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+
+              <div className="hidden md:flex items-center gap-1.5 pl-2 border-l">
+                <span className="text-xs text-muted-foreground">Go to:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={Math.max(1, Math.ceil(total / limit))}
+                  value={jumpPageInput}
+                  onChange={e => setJumpPageInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      const p = parseInt(jumpPageInput, 10)
+                      const maxP = Math.max(1, Math.ceil(total / limit))
+                      if (!Number.isNaN(p) && p >= 1 && p <= maxP) {
+                        setPage(p)
+                      }
+                    }
+                  }}
+                  className="h-7 w-12 text-xs font-mono text-center p-1"
+                />
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -463,6 +552,7 @@ function BidFormDialog({
         `${isEdit ? 'Updated' : 'Recorded'} bid quote of ₹${data.bidValue.toLocaleString()} by ${data.bidderName}`,
         isEdit ? initial?.id : (res.data as any)?.id
       )
+      realtimeSync.broadcast('BID_MUTATED')
       addToast({
         title: isEdit ? 'Bid updated' : 'Bid recorded',
         description: data.bidNumber,

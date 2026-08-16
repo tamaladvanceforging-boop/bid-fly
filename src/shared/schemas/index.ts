@@ -13,6 +13,105 @@ const numOpt = z.preprocess(
 const strInt = (min = 1, max = 10000) =>
   z.preprocess((v) => (v === '' || v === null || v === undefined ? min : Math.max(min, Math.min(max, parseInt(String(v), 10) || min))), z.number().int().min(min).max(max))
 
+export const PasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[\]{}|;:'",.<>\/]).{8,}$/
+
+export const LoginSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Please enter a valid work email address'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(PasswordRegex, 'Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character (@$!%*?&#)'),
+  role: z.string().optional(),
+  designation: z.string().optional()
+})
+
+export const RegisterSchema = z.object({
+  name: z.string().min(2, 'Full name must be at least 2 characters'),
+  companyName: z.string().min(2, 'Organization / Company name must be at least 2 characters'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid work email address'),
+  designation: z.string().min(2, 'Please select or enter your corporate designation'),
+  role: z.string().optional(),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(PasswordRegex, 'Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character (@$!%*?&#)'),
+  confirmPassword: z.string().min(1, 'Please confirm your password')
+}).refine(data => data.password === data.confirmPassword, {
+  message: 'Passwords do not match. Please ensure both password fields match exactly.',
+  path: ['confirmPassword']
+})
+
+export const ResetPasswordSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Please enter a valid work email address'),
+  resetPin: z.string().length(6, 'Verification PIN must be exactly 6 digits'),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(PasswordRegex, 'Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character (@$!%*?&#)'),
+  confirmPassword: z.string().min(1, 'Please confirm your new password')
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: 'New passwords do not match. Please re-enter matching passwords.',
+  path: ['confirmPassword']
+})
+
+export const ClarificationStageSchema = z.enum(['pre_bid', 'post_bid'])
+export const ClarificationStatusSchema = z.enum(['pending_response', 'clarified', 'rejected', 'amendment_issued', 'under_evaluation'])
+
+export const ClarificationSchema = z.object({
+  id: z.string().min(1),
+  stage: ClarificationStageSchema.default('pre_bid'),
+  tenderId: z.string().min(1),
+  tenderNumber: z.string().min(1),
+  tenderTitle: z.string().optional(),
+  querySubject: z.string().min(2, 'Query subject required'),
+  clauseReference: z.string().min(1, 'Clause reference required'),
+  clarificationDetails: z.string().min(2, 'Details required'),
+  authorityResponse: z.string().optional().default(''),
+  queryDate: z.string().min(1),
+  status: ClarificationStatusSchema.default('pending_response'),
+  reminderDate: z.string().min(1),
+  reminderHoursBefore: z.number().default(24),
+  notes: z.string().optional().default(''),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+})
+
+export const CompetitorSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(2, 'Competitor company name required'),
+  gstin: z.string().optional().default(''),
+  contactPerson: z.string().optional().default(''),
+  email: z.string().email().or(z.literal('')).optional().default(''),
+  phone: z.string().optional().default(''),
+  marketStrength: z.enum(['low', 'medium', 'high', 'dominant']).default('medium'),
+  typicalDiscountRate: numOpt,
+  historicalWinRate: numOpt,
+  bidsSubmittedCount: z.number().optional().default(0),
+  bidsWonCount: z.number().optional().default(0),
+  notes: z.string().optional().default(''),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+})
+
+export const CompetitorBidSchema = z.object({
+  id: z.string().min(1),
+  tenderId: z.string().min(1),
+  tenderNumber: z.string().min(1),
+  tenderTitle: z.string().optional(),
+  competitorId: z.string().min(1),
+  competitorName: z.string().min(1),
+  quotedPrice: num,
+  ourPrice: numOpt,
+  technicalScore: numOpt,
+  rank: z.enum(['L1', 'L2', 'L3', 'L4', 'Disqualified']).default('L2'),
+  isWinner: z.boolean().default(false),
+  priceVariancePercent: z.number().optional(),
+  marginSpread: z.number().optional(),
+  notes: z.string().optional().default(''),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+})
+
 export const TenderStatusSchema = z.enum(['open', 'closed', 'awarded', 'draft', 'submitted'])
 export const TenderPrioritySchema = z.enum(['low', 'medium', 'high', 'critical'])
 export const BidStatusSchema = z.enum(['pending', 'won', 'lost', 'disqualified'])

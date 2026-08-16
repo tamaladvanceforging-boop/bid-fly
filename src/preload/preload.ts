@@ -1,8 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
   IpcResponse, Tender, Bid, Vendor, Alert, AutomationRule,
-  AppSettings, DataEntrySheet, DashboardStats, Report
+  AppSettings, DataEntrySheet, DashboardStats, Report, User,
+  AuthSession, LoginInput, RegisterInput
 } from '@shared/types'
+import type { EnvConfig } from '@shared/config/env.config'
 import type {
   TenderCreateInput, TenderUpdateInput,
   BidCreateInput, BidUpdateInput,
@@ -16,9 +18,19 @@ async function invoke<T>(channel: string, ...args: unknown[]): Promise<IpcRespon
 }
 
 const api = {
-  // App
+  // App & Env
   hello: () => invoke<string>('app:hello'),
   getStats: () => invoke<DashboardStats>('app:getStats'),
+  getEnv: () => invoke<EnvConfig>('env:get'),
+
+  // Auth
+  auth: {
+    login: (data: LoginInput) => invoke<AuthSession>('auth:login', data),
+    register: (data: RegisterInput) => invoke<AuthSession>('auth:register', data),
+    getProfile: (id: string) => invoke<User>('auth:getProfile', id),
+    updateProfile: (id: string, updates: Partial<User>) => invoke<User>('auth:updateProfile', id, updates),
+    changePassword: (id: string, oldPass: string, newPass: string) => invoke<boolean>('auth:changePassword', id, oldPass, newPass)
+  },
 
   // Tenders
   tender: {

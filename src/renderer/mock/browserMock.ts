@@ -28,449 +28,12 @@ const INITIAL_SETTINGS: AppSettings = {
   updatedAt: nowISO()
 }
 
-const INITIAL_TENDERS: Tender[] = [
-  {
-    id: 't-101',
-    tenderNumber: 'CPWD/2026/CIVIL/8841',
-    title: 'Construction of Multi-Specialty Hospital Block & Allied Infrastructure',
-    description: 'Turnkey construction of 500-bed hospital building including civil structure, MEP, HVAC, electrical substations, firefighting systems, and external development.',
-    organization: 'Central Public Works Department (CPWD)',
-    category: 'Civil Works',
-    value: 84500000,
-    currency: 'INR',
-    status: 'open',
-    priority: 'critical',
-    publishDate: new Date(Date.now() - 5 * 86400000).toISOString(),
-    submissionDeadline: new Date(Date.now() + 18 * 86400000).toISOString(),
-    submissionLocation: 'New Delhi, Delhi NCR',
-    contactPerson: 'Er. Rajeshwar Sharma (EE Civil)',
-    contactEmail: 'rajeshwar.cpwd@nic.in',
-    contactPhone: '+91 11 2338 4921',
-    documents: ['NIT_Document_8841.pdf', 'BOQ_Civil_MEP.xlsx', 'Tender_Specs_v2.pdf'],
-    tags: ['Hospital', 'Infrastructure', 'EPC', 'High Value'],
-    notes: 'EMD of ₹16.9 Lakhs required via BG. Pre-bid meeting scheduled on 20th.',
-    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString()
-  },
-  {
-    id: 't-102',
-    tenderNumber: 'IRCTC/IT/CLOUD/2026-03',
-    title: 'Enterprise Hybrid Cloud Infrastructure & Disaster Recovery Setup',
-    description: 'Design, deployment, and 5-year 24x7 managed services for mission-critical ticketing and catering portal on multi-region Tier-IV cloud with 99.995% uptime SLA.',
-    organization: 'Indian Railway Catering and Tourism Corp (IRCTC)',
-    category: 'IT & Software',
-    value: 42000000,
-    currency: 'INR',
-    status: 'open',
-    priority: 'high',
-    publishDate: new Date(Date.now() - 12 * 86400000).toISOString(),
-    submissionDeadline: new Date(Date.now() + 6 * 86400000).toISOString(),
-    submissionLocation: 'New Delhi / Online GeM',
-    contactPerson: 'Sanjay Deshmukh (GM IT)',
-    contactEmail: 'it.tenders@irctc.co.in',
-    contactPhone: '+91 11 4110 5000',
-    documents: ['Cloud_RFP_IRCTC_2026.pdf', 'SLA_Framework.pdf'],
-    tags: ['Cloud', 'Managed Services', 'High Availability', 'Security'],
-    notes: 'Security audit by CERT-In empaneled auditor mandatory.',
-    createdAt: new Date(Date.now() - 12 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString()
-  },
-  {
-    id: 't-103',
-    tenderNumber: 'ONGC/OFFSHORE/PIPE/2026/09',
-    title: 'Supply and Installation of Subsea Carbon Steel Pipelines (Mumbai High)',
-    description: 'Procurement of 48 km 16-inch API 5L Grade X65 seamless pipeline and offshore pipelay barge services for crude transportation.',
-    organization: 'Oil and Natural Gas Corporation (ONGC)',
-    category: 'Supply & Procurement',
-    value: 125000000,
-    currency: 'INR',
-    status: 'open',
-    priority: 'high',
-    publishDate: new Date(Date.now() - 8 * 86400000).toISOString(),
-    submissionDeadline: new Date(Date.now() + 25 * 86400000).toISOString(),
-    submissionLocation: 'Bandra-Kurla Complex, Mumbai',
-    contactPerson: 'Anand Kulkarni (Chief Engineer Offshore)',
-    contactEmail: 'kulkarni_anand@ongc.co.in',
-    contactPhone: '+91 22 2656 3100',
-    documents: ['ONGC_Pipe_Spec_2026.pdf', 'Offshore_Safety_Guidelines.pdf'],
-    tags: ['Offshore', 'Oil & Gas', 'Pipelines'],
-    notes: 'Strict compliance with OISD-141 norms required.',
-    createdAt: new Date(Date.now() - 8 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 3 * 86400000).toISOString()
-  },
-  {
-    id: 't-104',
-    tenderNumber: 'NHAI/BOT/HWY-44/PKG-3',
-    title: 'Four-Laning of National Highway Section km 120 to km 195 (EPC Mode)',
-    description: 'Widening, strengthening, pavement construction, 6 major bridges, 18 culverts, toll plaza installation, and 10 years routine maintenance.',
-    organization: 'National Highways Authority of India (NHAI)',
-    category: 'Civil Works',
-    value: 210000000,
-    currency: 'INR',
-    status: 'submitted',
-    priority: 'critical',
-    publishDate: new Date(Date.now() - 30 * 86400000).toISOString(),
-    submissionDeadline: new Date(Date.now() - 2 * 86400000).toISOString(),
-    submissionLocation: 'NHAI HQ, Dwarka, New Delhi',
-    contactPerson: 'V. Ramanathan (CGM Tech)',
-    contactEmail: 'cgm.tech@nhai.gov.in',
-    contactPhone: '+91 11 2507 4100',
-    documents: ['NHAI_DPR_Vol1.pdf', 'Toll_Financial_Model.xlsx'],
-    tags: ['Highway', 'EPC', 'NHAI', 'Mega Project'],
-    notes: 'Technical bid opened. Financial bid evaluation in progress.',
-    createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString()
-  },
-  {
-    id: 't-105',
-    tenderNumber: 'BHEL/TURBINE/SOLAR/2026/41',
-    title: 'Supply of 250 MW Solar PV Modules & Inverter Stations',
-    description: 'Mono-crystalline PERC modules (550Wp+) with ALMM compliance, 1500V central inverters, and SCADA monitoring system.',
-    organization: 'Bharat Heavy Electricals Limited (BHEL)',
-    category: 'Manufacturing',
-    value: 68000000,
-    currency: 'INR',
-    status: 'awarded',
-    priority: 'medium',
-    publishDate: new Date(Date.now() - 60 * 86400000).toISOString(),
-    submissionDeadline: new Date(Date.now() - 20 * 86400000).toISOString(),
-    submissionLocation: 'Bengaluru, Karnataka',
-    contactPerson: 'K. S. Narayanan (DGM Purchase)',
-    contactEmail: 'ksnarayanan@bhel.in',
-    contactPhone: '+91 80 2699 8000',
-    documents: ['BHEL_Solar_Award_Letter.pdf'],
-    tags: ['Solar', 'Renewable Energy', 'ALMM', 'BHEL'],
-    notes: 'Contract awarded to Tata Power Solar. Delivery by Nov 2026.',
-    createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 10 * 86400000).toISOString()
-  }
-]
-
-const INITIAL_BIDS: Bid[] = [
-  {
-    id: 'b-201',
-    tenderId: 't-101',
-    bidNumber: 'BID-2026-CPWD-01',
-    bidderName: 'Larsen & Toubro Ltd. (ECC Division)',
-    bidValue: 81200000,
-    currency: 'INR',
-    submissionDate: new Date(Date.now() - 2 * 86400000).toISOString(),
-    status: 'pending',
-    technicalScore: 94.5,
-    financialScore: 88.0,
-    overallScore: 91.2,
-    isWinning: false,
-    documents: ['Technical_Proposal_LT.pdf', 'Financial_Bid_LT.pdf'],
-    notes: 'Strong technical compliance and proven experience in hospital builds.',
-    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString()
-  },
-  {
-    id: 'b-202',
-    tenderId: 't-101',
-    bidNumber: 'BID-2026-CPWD-02',
-    bidderName: 'Shapoorji Pallonji & Co. Ltd.',
-    bidValue: 79800000,
-    currency: 'INR',
-    submissionDate: new Date(Date.now() - 1 * 86400000).toISOString(),
-    status: 'pending',
-    technicalScore: 91.0,
-    financialScore: 92.5,
-    overallScore: 91.8,
-    isWinning: false,
-    documents: ['SP_Technical_Sub.pdf', 'Price_Schedule.pdf'],
-    notes: 'Lowest financial quote among qualified bidders so far.',
-    createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString()
-  },
-  {
-    id: 'b-203',
-    tenderId: 't-102',
-    bidNumber: 'BID-2026-IRCTC-01',
-    bidderName: 'Tata Consultancy Services (TCS)',
-    bidValue: 39500000,
-    currency: 'INR',
-    submissionDate: new Date(Date.now() - 4 * 86400000).toISOString(),
-    status: 'pending',
-    technicalScore: 96.0,
-    financialScore: 89.0,
-    overallScore: 92.5,
-    isWinning: false,
-    documents: ['TCS_Cloud_Solution.pdf', 'SLA_Compliance.pdf'],
-    notes: 'Includes active-active multi-region DR architecture.',
-    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString()
-  },
-  {
-    id: 'b-204',
-    tenderId: 't-104',
-    bidNumber: 'BID-2026-NHAI-01',
-    bidderName: 'Dilip Buildcon Limited',
-    bidValue: 198000000,
-    currency: 'INR',
-    submissionDate: new Date(Date.now() - 15 * 86400000).toISOString(),
-    status: 'won',
-    technicalScore: 92.0,
-    financialScore: 95.0,
-    overallScore: 93.5,
-    isWinning: true,
-    documents: ['DBL_EPC_Proposal.pdf', 'Equipment_Deployment.pdf'],
-    notes: 'Declared L1 and awarded letter of acceptance.',
-    createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 3 * 86400000).toISOString()
-  },
-  {
-    id: 'b-205',
-    tenderId: 't-105',
-    bidNumber: 'BID-2026-BHEL-01',
-    bidderName: 'Tata Power Solar Systems Ltd.',
-    bidValue: 64200000,
-    currency: 'INR',
-    submissionDate: new Date(Date.now() - 45 * 86400000).toISOString(),
-    status: 'won',
-    technicalScore: 95.0,
-    financialScore: 94.0,
-    overallScore: 94.5,
-    isWinning: true,
-    documents: ['Tata_Solar_Proposal.pdf'],
-    notes: 'Highest composite score in QCBS evaluation.',
-    createdAt: new Date(Date.now() - 45 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 20 * 86400000).toISOString()
-  }
-]
-
-const INITIAL_VENDORS: Vendor[] = [
-  {
-    id: 'v-301',
-    name: 'Larsen & Toubro Ltd.',
-    registrationNumber: 'L99999MH1946PLC004768',
-    taxId: '27AAACL0140P1ZT',
-    email: 'tenders.infra@larsentoubro.com',
-    phone: '+91 22 6752 5656',
-    address: 'L&T House, Ballard Estate',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    country: 'India',
-    pincode: '400001',
-    contactPerson: 'Vikram Sengupta (VP Business Dev)',
-    categories: ['Civil Works', 'Infrastructure', 'EPC', 'Power'],
-    certifications: ['ISO 9001:2015', 'ISO 14001:2015', 'ISO 45001:2018', 'CMMI Level 5'],
-    rating: 4.9,
-    status: 'active',
-    notes: 'Grade A+ EPC contractor with pan-India execution capacity.',
-    createdAt: new Date(Date.now() - 90 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 5 * 86400000).toISOString()
-  },
-  {
-    id: 'v-302',
-    name: 'Tata Consultancy Services Ltd.',
-    registrationNumber: 'L22210MH1995PLC084781',
-    taxId: '27AAACT2727Q1ZW',
-    email: 'gov.solutions@tcs.com',
-    phone: '+91 22 6778 9999',
-    address: 'TCS House, Raveline Street, Fort',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    country: 'India',
-    pincode: '400001',
-    contactPerson: 'Meera Nambiar (Client Partner)',
-    categories: ['IT & Software', 'Consulting', 'Cloud', 'Cybersecurity'],
-    certifications: ['CMMI Level 5 v2.0', 'ISO 27001', 'SOC 2 Type II', 'FedRAMP'],
-    rating: 4.8,
-    status: 'active',
-    notes: 'Prime IT partner for national mission-mode e-governance systems.',
-    createdAt: new Date(Date.now() - 120 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 10 * 86400000).toISOString()
-  },
-  {
-    id: 'v-303',
-    name: 'Shapoorji Pallonji & Co. Ltd.',
-    registrationNumber: 'U45200MH1943PLC003812',
-    taxId: '27AAACS1234F1Z8',
-    email: 'sp.bids@shapoorji.com',
-    phone: '+91 22 6749 0000',
-    address: 'SP Centre, 41/44 Minoo Desai Marg, Colaba',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    country: 'India',
-    pincode: '400005',
-    contactPerson: 'Farhan Contractor (Head Tendering)',
-    categories: ['Civil Works', 'High-Rise', 'Healthcare', 'Commercial'],
-    certifications: ['ISO 9001:2015', 'LEED Platinum Certified Builder'],
-    rating: 4.7,
-    status: 'active',
-    notes: 'Extensive track record in hospital and institutional campuses.',
-    createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 12 * 86400000).toISOString()
-  },
-  {
-    id: 'v-304',
-    name: 'Dilip Buildcon Limited',
-    registrationNumber: 'L45201MP2006PLC018689',
-    taxId: '23AABCD5678G1ZP',
-    email: 'dbl.tenders@dilipbuildcon.co.in',
-    phone: '+91 755 402 9999',
-    address: 'Plot No. 5, Inside Govind Narayan Singh Gate, Chuna Bhatti',
-    city: 'Bhopal',
-    state: 'Madhya Pradesh',
-    country: 'India',
-    pincode: '462016',
-    contactPerson: 'Rohan Suryavanshi (Director Operations)',
-    categories: ['Civil Works', 'Highways', 'Bridges', 'Mining'],
-    certifications: ['ISO 9001:2015', 'ISO 14001:2015'],
-    rating: 4.6,
-    status: 'active',
-    notes: 'Owns one of the largest heavy equipment fleets in India.',
-    createdAt: new Date(Date.now() - 40 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 4 * 86400000).toISOString()
-  }
-]
-
-const INITIAL_ALERTS: Alert[] = [
-  {
-    id: 'a-401',
-    title: 'Submission Deadline Approaching: IRCTC Cloud RFP',
-    message: 'Submission deadline is in 6 days (IRCTC/IT/CLOUD/2026-03). Verify digital signature tokens and upload financial schedule.',
-    severity: 'warning',
-    tenderId: 't-102',
-    isRead: false,
-    createdAt: new Date(Date.now() - 2 * 3600000).toISOString()
-  },
-  {
-    id: 'a-402',
-    title: 'New High-Value Tender Published: ONGC Mumbai High Subsea',
-    message: 'ONGC published tender ONGC/OFFSHORE/PIPE/2026/09 valued at ₹12.5 Cr. Pre-qualification criteria requires 35km pipelaying experience.',
-    severity: 'info',
-    tenderId: 't-103',
-    isRead: false,
-    createdAt: new Date(Date.now() - 8 * 3600000).toISOString()
-  },
-  {
-    id: 'a-403',
-    title: 'Bid Winner Notification: NHAI Highway 44 Package-3',
-    message: 'Dilip Buildcon Ltd. has been confirmed as L1 winner for ₹19.8 Cr project. LOA dispatched.',
-    severity: 'success',
-    tenderId: 't-104',
-    isRead: true,
-    createdAt: new Date(Date.now() - 24 * 3600000).toISOString()
-  },
-  {
-    id: 'a-404',
-    title: 'EMD Bank Guarantee Verification Pending: CPWD Hospital',
-    message: 'Bank guarantee confirmation for CPWD/2026/CIVIL/8841 is pending from SBI Treasury Branch.',
-    severity: 'error',
-    tenderId: 't-101',
-    isRead: false,
-    createdAt: new Date(Date.now() - 14 * 3600000).toISOString()
-  }
-]
-
-const INITIAL_AUTOMATION: AutomationRule[] = [
-  {
-    id: 'r-501',
-    name: 'Daily Tender Discovery & GeM Sync',
-    description: 'Fetch new government and corporate tender notifications from Tender24x7, CPPPortal, and GeM.',
-    trigger: 'cron',
-    cronSchedule: '0 8 * * 1-6',
-    action: 'sync_tenders',
-    params: { autoCategorize: true, minBudget: 500000 },
-    isEnabled: true,
-    lastRun: new Date(Date.now() - 6 * 3600000).toISOString(),
-    nextRun: new Date(Date.now() + 18 * 3600000).toISOString(),
-    createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString()
-  },
-  {
-    id: 'r-502',
-    name: '24h Submission Deadline Alert',
-    description: 'Send high-priority notification and email reminder 24 hours before any tender submission deadline.',
-    trigger: 'cron',
-    cronSchedule: '0 */4 * * *',
-    action: 'send_deadline_reminder',
-    params: { leadHours: 24, recipients: ['bid.team@bidfly.app'] },
-    isEnabled: true,
-    lastRun: new Date(Date.now() - 2 * 3600000).toISOString(),
-    nextRun: new Date(Date.now() + 2 * 3600000).toISOString(),
-    createdAt: new Date(Date.now() - 25 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString()
-  },
-  {
-    id: 'r-503',
-    name: 'Weekly Management Analytics Digest',
-    description: 'Compile weekly pipeline report, win rates, and budget allocations in PDF format.',
-    trigger: 'cron',
-    cronSchedule: '0 9 * * 1',
-    action: 'export_report',
-    params: { format: 'pdf', includeCharts: true },
-    isEnabled: true,
-    lastRun: new Date(Date.now() - 4 * 86400000).toISOString(),
-    nextRun: new Date(Date.now() + 3 * 86400000).toISOString(),
-    createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 4 * 86400000).toISOString()
-  },
-  {
-    id: 'r-504',
-    name: 'Database Backup & Snapshot',
-    description: 'Create encrypted snapshot of SQLite database and store in backup directory.',
-    trigger: 'manual',
-    action: 'backup_db',
-    params: { compress: true },
-    isEnabled: true,
-    lastRun: new Date(Date.now() - 24 * 3600000).toISOString(),
-    createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString()
-  }
-]
-
-const INITIAL_SHEETS: DataEntrySheet[] = [
-  {
-    id: 's-601',
-    name: 'CPWD Hospital BOQ & Cost Analysis',
-    tenderId: 't-101',
-    rows: 15,
-    cols: 7,
-    columnHeaders: ['Item Code', 'Description', 'Unit', 'Qty', 'Rate (₹)', 'Est. Amount (₹)', 'Vendor Quote (₹)'],
-    cells: {
-      '0:0': { row: 0, col: 0, value: 'Item #' },
-      '0:1': { row: 0, col: 1, value: 'Scope Description' },
-      '0:2': { row: 0, col: 2, value: 'Unit' },
-      '0:3': { row: 0, col: 3, value: 'Quantity' },
-      '0:4': { row: 0, col: 4, value: 'Est. Rate' },
-      '0:5': { row: 0, col: 5, value: 'Total Est.' },
-      '0:6': { row: 0, col: 6, value: 'L1 Bid Quote' },
-      '1:0': { row: 1, col: 0, value: '1.01' },
-      '1:1': { row: 1, col: 1, value: 'Earthwork in excavation in foundation' },
-      '1:2': { row: 1, col: 2, value: 'Cum' },
-      '1:3': { row: 1, col: 3, value: '12500' },
-      '1:4': { row: 1, col: 4, value: '450' },
-      '1:5': { row: 1, col: 5, value: '=D2*E2' },
-      '1:6': { row: 1, col: 6, value: '5200000' },
-      '2:0': { row: 2, col: 0, value: '1.02' },
-      '2:1': { row: 2, col: 1, value: 'Reinforced cement concrete M35 in column' },
-      '2:2': { row: 2, col: 2, value: 'Cum' },
-      '2:3': { row: 2, col: 3, value: '4800' },
-      '2:4': { row: 2, col: 4, value: '7800' },
-      '2:5': { row: 2, col: 5, value: '=D3*E3' },
-      '2:6': { row: 2, col: 6, value: '35800000' },
-      '3:0': { row: 3, col: 0, value: '1.03' },
-      '3:1': { row: 3, col: 1, value: 'Thermo-mechanically treated Fe500D steel' },
-      '3:2': { row: 3, col: 2, value: 'MT' },
-      '3:3': { row: 3, col: 3, value: '620' },
-      '3:4': { row: 3, col: 4, value: '68000' },
-      '3:5': { row: 3, col: 5, value: '=D4*E4' },
-      '3:6': { row: 3, col: 6, value: '41200000' },
-      '4:0': { row: 4, col: 0, value: 'TOTAL' },
-      '4:1': { row: 4, col: 1, value: 'Grand Total Civil Package' },
-      '4:2': { row: 4, col: 2, value: '—' },
-      '4:3': { row: 4, col: 3, value: '—' },
-      '4:4': { row: 4, col: 4, value: '—' },
-      '4:5': { row: 4, col: 5, value: '=SUM(F2:F4)' },
-      '4:6': { row: 4, col: 6, value: '=SUM(G2:G4)' }
-    },
-    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString()
-  }
-]
+const INITIAL_TENDERS: Tender[] = []
+const INITIAL_BIDS: Bid[] = []
+const INITIAL_VENDORS: Vendor[] = []
+const INITIAL_ALERTS: Alert[] = []
+const INITIAL_AUTOMATION: AutomationRule[] = []
+const INITIAL_SHEETS: DataEntrySheet[] = []
 
 class BrowserStorageManager {
   private get<T>(key: string, def: T): T {
@@ -527,6 +90,71 @@ const store = new BrowserStorageManager()
 export function createBrowserMockAPI() {
   return {
     hello: async () => ok('BidFly Browser Mock v1.0.0'),
+    getEnv: async () => ok({
+      appTitle: 'BidFly Enterprise Suite',
+      appVersion: '1.0.0',
+      apiUrl: 'http://localhost:3000',
+      geminiApiKey: '',
+      openaiApiKey: '',
+      gemPortalKey: 'gem_live_key_demo12345',
+      tender247Key: 't24_secret_demo67890',
+      cpppPortalKey: 'cppp_api_token_sample',
+      databaseUrl: 'database/bidfly.db',
+      authSessionTimeout: 86400
+    }),
+
+    auth: {
+      login: async (input: { email: string; password?: string; role?: any; name?: string }) => {
+        const user = {
+          id: 'usr_' + Math.random().toString(36).slice(2, 9),
+          name: input.name || (input.email.split('@')[0].toUpperCase() + ' (Lead)'),
+          email: input.email,
+          role: input.role || 'bid_manager',
+          assignedCompanies: ['AF', 'AEC', 'LT']
+        }
+        return ok({
+          user,
+          token: `mock_token_${Date.now()}`,
+          expiresAt: new Date(Date.now() + 86400 * 1000).toISOString()
+        })
+      },
+      register: async (input: { name: string; email: string; password?: string; role?: any }) => {
+        const user = {
+          id: 'usr_' + Math.random().toString(36).slice(2, 9),
+          name: input.name,
+          email: input.email,
+          role: input.role || 'bid_manager',
+          assignedCompanies: ['AF', 'AEC', 'LT']
+        }
+        return ok({
+          user,
+          token: `mock_token_${Date.now()}`,
+          expiresAt: new Date(Date.now() + 86400 * 1000).toISOString()
+        })
+      },
+      getProfile: async (id: string) => {
+        return ok({
+          id,
+          name: 'Tamal Roy Chowdhury',
+          email: 'tamal@advanceforging.com',
+          role: 'ceo' as const,
+          designation: 'Chief Executive Officer (CEO)',
+          assignedCompanies: ['AF', 'AEC', 'LT']
+        })
+      },
+      updateProfile: async (id: string, updates: any) => {
+        return ok({
+          id,
+          name: updates.name || 'Tamal Roy Chowdhury',
+          email: updates.email || 'tamal@advanceforging.com',
+          role: updates.role || 'ceo',
+          designation: updates.designation || 'Chief Executive Officer (CEO)',
+          assignedCompanies: updates.assignedCompanies || ['AF', 'AEC', 'LT'],
+          avatar: updates.avatar || ''
+        })
+      },
+      changePassword: async () => ok(true)
+    },
 
     getStats: async (): Promise<IpcResponse<DashboardStats>> => {
       const tenders = store.getTenders()
@@ -541,10 +169,15 @@ export function createBrowserMockAPI() {
 
       return ok({
         totalTenders: tenders.length,
+        activeTenders: openTenders,
         openTenders,
+        submittedBids: activeBids,
         activeBids,
         wonBids,
         totalValue,
+        totalBidValue: totalValue,
+        wonBidValue: bids.filter(b => b.status === 'won').reduce((acc, b) => acc + (b.bidValue || 0), 0),
+        activeVendors: store.getVendors().length,
         pendingAlerts,
         upcomingDeadlines
       })

@@ -179,39 +179,39 @@ export default function DashboardPage() {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Active Tenders Tracked"
-          value={stats?.totalTenders ? stats.totalTenders.toString() : '12'}
+          value={stats?.totalTenders !== undefined ? stats.totalTenders.toString() : '0'}
           subtitle="Across GeM, CPWD, NHAI, IOCL"
           icon={Gavel}
           gradient="from-blue-500 to-cyan-400"
           iconBg="bg-blue-500/15 text-blue-500"
-          trend={{ value: '+14.2%', positive: true }}
+          trend={stats?.totalTenders ? { value: '+14.2%', positive: true } : undefined}
         />
         <StatCard
           title="Open Submissions"
-          value={stats?.openTenders ? stats.openTenders.toString() : '6'}
+          value={stats?.openTenders !== undefined ? stats.openTenders.toString() : '0'}
           subtitle="Active bidding countdown"
           icon={Clock}
           gradient="from-amber-500 to-yellow-400"
           iconBg="bg-amber-500/15 text-amber-500"
-          trend={{ value: '+8.5%', positive: true }}
+          trend={stats?.openTenders ? { value: '+8.5%', positive: true } : undefined}
         />
         <StatCard
           title="Contracts Won (L1)"
-          value={stats?.wonBids ? stats.wonBids.toString() : '4'}
+          value={stats?.wonBids !== undefined ? stats.wonBids.toString() : '0'}
           subtitle="Awarded LOA contracts"
           icon={Trophy}
           gradient="from-emerald-500 to-teal-400"
           iconBg="bg-emerald-500/15 text-emerald-500"
-          trend={{ value: '+24.0%', positive: true }}
+          trend={stats?.wonBids ? { value: '+24.0%', positive: true } : undefined}
         />
         <StatCard
           title="Total Pipeline Value"
-          value={stats ? formatCurrency(stats.totalValue) : '₹7.28 Cr'}
+          value={stats ? formatCurrency(stats.totalValue || stats.totalBidValue || 0) : '₹0'}
           subtitle="Cumulative contract estimates"
           icon={DollarSign}
           gradient="from-indigo-500 to-purple-500"
           iconBg="bg-indigo-500/15 text-indigo-500"
-          trend={{ value: '+18.3%', positive: true }}
+          trend={stats?.totalValue ? { value: '+18.3%', positive: true } : undefined}
         />
       </div>
 

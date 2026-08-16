@@ -1,4 +1,4 @@
-import { Bell, Menu, Moon, Sun, Search, User, Settings, Building2, LogOut, Check } from 'lucide-react'
+import { Bell, Menu, Moon, Sun, Search, User, Settings, Building2, LogOut, Check, Wifi, WifiOff, RefreshCw } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@renderer/components/ui/button'
@@ -17,6 +17,7 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { useAppStore, useThemeStore, useUIStore } from '@renderer/stores/app.store'
 import { useAuthStore } from '@renderer/stores/auth.store'
 import { formatRelativeTime } from '@shared/utils'
+import { realtimeSync, type NetworkSyncStatus } from '@shared/utils/sync.service'
 
 const BREADCRUMB_MAP: Record<string, string> = {
   '/': 'Dashboard',
@@ -46,6 +47,14 @@ export function Header() {
 
   const [alertsOpen, setAlertsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [syncState, setSyncState] = useState<{ status: NetworkSyncStatus; pendingCount: number }>({ status: 'online', pendingCount: 0 })
+
+  useEffect(() => {
+    const unsub = realtimeSync.subscribeStatus((status, pendingCount) => {
+      setSyncState({ status, pendingCount })
+    })
+    return unsub
+  }, [])
 
   useEffect(() => {
     fetchAlerts()
@@ -143,6 +152,38 @@ export function Header() {
         </div>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          {/* Network LAN Sync Status Pill */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              addToast({ title: 'Synchronizing...', description: 'Triggering manual network & queue sync.', variant: 'default' })
+              const res = await realtimeSync.triggerManualSync()
+              addToast({ title: 'Network Sync Complete', description: `Flushed ${res.flushedCount} pending queue items. Sync status active.`, variant: 'success' })
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 text-[11px] h-8 px-2.5 btn-spring font-medium"
+            title="Click to force manual network & database sync"
+          >
+            {syncState.status === 'online' ? (
+              <>
+                <Wifi className="h-3.5 w-3.5 text-emerald-500" />
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">LAN Active</span>
+              </>
+            ) : syncState.status === 'syncing' ? (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />
+                <span className="text-blue-500 font-semibold">Syncing...</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                  Offline ({syncState.pendingCount})
+                </span>
+              </>
+            )}
+          </Button>
+
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="shrink-0">
             {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
@@ -240,7 +281,10 @@ export function Header() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-left min-w-0">
-                    <p className="text-xs font-bold truncate">{user?.name || 'Tamal (Lead)'}</p>
+                    <p className="text-xs font-bold truncate">{user?.name || 'Tamal Roy Chowdhury'}</p>
+                    <p className="text-[10px] text-primary font-semibold truncate">
+                      {user?.designation || (user?.role === 'ceo' ? 'Chief Executive Officer (CEO)' : 'Executive Manager')}
+                    </p>
                     <p className="text-[11px] text-muted-foreground truncate">{user?.email || 'tamal@advanceforging.com'}</p>
                   </div>
                 </div>

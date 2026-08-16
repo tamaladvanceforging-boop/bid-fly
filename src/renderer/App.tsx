@@ -15,6 +15,7 @@ import Reports from '@renderer/pages/Reports'
 import Automation from '@renderer/pages/Automation'
 import Alerts from '@renderer/pages/Alerts'
 import Settings from '@renderer/pages/Settings'
+import Competitors from '@renderer/pages/Competitors'
 import { Loader2 } from 'lucide-react'
 import { BidFlyLogo } from '@renderer/components/ui/Logo'
 
@@ -84,6 +85,7 @@ export function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/automation" element={<Automation />} />
             <Route path="/alerts" element={<Alerts />} />
+            <Route path="/competitors" element={<Competitors />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

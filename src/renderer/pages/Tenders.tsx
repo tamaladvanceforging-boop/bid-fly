@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import {
   Gavel, Plus, Search, Filter, MoreHorizontal, Pencil, Trash2, Eye,
   Download, Calendar, Building2, Tag, ChevronLeft, ChevronRight,
-  FileUp, Check, DollarSign, MapPin, Mail, Phone, ExternalLink
+  ChevronsLeft, ChevronsRight, FileUp, Check, DollarSign, MapPin, Mail, Phone, ExternalLink
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -32,6 +32,8 @@ import { TenderCreateSchema, type TenderCreateInput, type PaginationParams } fro
 import { useAppStore } from '@renderer/stores/app.store'
 import { useActivityStore } from '@renderer/stores/activity.store'
 import { ConfirmDeleteDialog } from '@renderer/components/ui/ConfirmDeleteDialog'
+import { realtimeSync } from '@shared/utils/sync.service'
+import { ExportMenu } from '@renderer/components/ui/export-menu'
 
 const STATUS_BADGE: Record<TenderStatus, 'default' | 'success' | 'destructive' | 'secondary' | 'warning'> = {
   open: 'success',
@@ -55,7 +57,8 @@ export default function TendersPage() {
   const [tenders, setTenders] = useState<Tender[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [limit] = useState(25)
+  const [limit, setLimit] = useState(25)
+  const [jumpPageInput, setJumpPageInput] = useState('1')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
@@ -64,6 +67,16 @@ export default function TendersPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [viewOpen, setViewOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  // Real-time broadcast sync listener
+  useEffect(() => {
+    const unsubscribe = realtimeSync.subscribe((msg) => {
+      if (msg.type === 'TENDER_MUTATED') {
+        load()
+      }
+    })
+    return unsubscribe
+  }, [])
 
   // Handle URL query parameters (e.g. from global search or dashboard button)
   useEffect(() => {
@@ -95,7 +108,7 @@ export default function TendersPage() {
 
   useEffect(() => {
     load()
-  }, [page, statusFilter, priorityFilter])
+  }, [page, limit, statusFilter, priorityFilter])
 
   useEffect(() => {
     const t = setTimeout(load, 300)
@@ -111,6 +124,7 @@ export default function TendersPage() {
     const res = await window.bidfly.tender.delete(id)
     if (res?.success) {
       logActivity('DELETE', 'Tender', tenderToDelete.tenderNumber, `Deleted tender: ${title}`, id)
+      realtimeSync.broadcast('TENDER_MUTATED')
       addToast({ title: 'Tender deleted', description: title, variant: 'success' })
       load()
     } else {
@@ -154,10 +168,21 @@ export default function TendersPage() {
             {total.toLocaleString()} tender{total !== 1 ? 's' : ''} total • Discover, evaluate, and track submissions
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-2" /> Export CSV
-          </Button>
+        <div className="flex gap-2 items-center">
+          <ExportMenu
+            title="Tenders Workspace Master Directory"
+            columns={[
+              { header: 'Tender No', key: 'tenderNumber' },
+              { header: 'Title', key: 'title' },
+              { header: 'Organization', key: 'organization' },
+              { header: 'Category', key: 'category' },
+              { header: 'Estimated Value', key: 'value', formatter: (v: number) => formatCurrency(v) },
+              { header: 'Status', key: 'status', formatter: (v: string) => v.toUpperCase() },
+              { header: 'Priority', key: 'priority', formatter: (v: string) => v.toUpperCase() },
+              { header: 'Deadline', key: 'submissionDeadline', formatter: (v: string) => formatDate(v) }
+            ]}
+            data={tenders}
+          />
           <Button size="sm" onClick={() => { setSelected(null); setCreateOpen(true) }}>
             <Plus className="h-4 w-4 mr-2" /> New Tender
           </Button>
@@ -312,20 +337,65 @@ export default function TendersPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20">
-            <p className="text-xs text-muted-foreground">
-              Showing {tenders.length ? (page - 1) * limit + 1 : 0}–{Math.min(page * limit, total)} of {total}
-            </p>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-1 px-2">
-                <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-muted-foreground">
+                Showing {tenders.length ? (page - 1) * limit + 1 : 0}–{Math.min(page * limit, total)} of {total} tenders
+              </p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Per page:</span>
+                <Select value={String(limit)} onValueChange={v => { setLimit(Number(v)); setPage(1) }}>
+                  <SelectTrigger className="h-7 w-[70px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(1)} disabled={page === 1} title="First page">
+                  <ChevronsLeft className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} title="Previous page">
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+
+                <div className="flex items-center gap-1 px-2">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">Page {page} of {totalPages}</span>
+                </div>
+
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} title="Next page">
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(totalPages)} disabled={page === totalPages} title="Last page">
+                  <ChevronsRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+
+              <div className="hidden md:flex items-center gap-1.5 pl-2 border-l">
+                <span className="text-xs text-muted-foreground">Go to:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={jumpPageInput}
+                  onChange={e => setJumpPageInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      const p = parseInt(jumpPageInput, 10)
+                      if (!Number.isNaN(p) && p >= 1 && p <= totalPages) {
+                        setPage(p)
+                      }
+                    }
+                  }}
+                  className="h-7 w-12 text-xs font-mono text-center p-1"
+                />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -451,6 +521,7 @@ function TenderFormDialog({ open, onOpenChange, initial, onClose, onSaved }: For
           `${isEdit ? 'Updated' : 'Created'} tender "${data.title}" for ${data.organization}`,
           isEdit ? initial?.id : (res.data as any)?.id
         )
+        realtimeSync.broadcast('TENDER_MUTATED')
         addToast({
           title: isEdit ? 'Tender updated' : 'Tender created',
           description: data.title,
