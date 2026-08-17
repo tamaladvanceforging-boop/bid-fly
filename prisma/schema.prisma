@@ -1,252 +1,181 @@
-// BidFly Enterprise Suite — Comprehensive Database Schema (Prisma 7)
-// Supporting Desktop (Local SQLite) and Cloud/Web Hybrid Architecture
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client"
+    output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+    provider = "sqlite"
 }
 
 model User {
-  id                String   @id @default(uuid())
-  name              String
-  email             String   @unique
-  passwordHash      String   @map("password_hash")
-  role              String   @default("bid_manager") // ceo, admin, bid_manager, etc.
-  designation       String?
-  assignedCompanies String?  @map("assigned_companies") // JSON array string e.g. ["AF", "AEC"]
-  avatar            String?
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  @@map("users")
+    id        String   @id @default(cuid())
+    name      String
+    email     String   @unique
+    password  String
+    role      String   @default("bidder")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Tender {
-  id                 String   @id @default(uuid())
-  tenderNumber       String   @unique @map("tender_number")
-  title              String
-  description        String?
-  organization       String
-  category           String
-  value              Float    @default(0)
-  currency           String   @default("INR")
-  status             String   @default("open") // open, submitted, won, lost, draft, cancelled
-  priority           String   @default("medium") // high, medium, low
-  publishDate        String   @map("publish_date")
-  submissionDeadline String   @map("submission_deadline")
-  submissionLocation String?  @map("submission_location")
-  contactPerson      String?  @map("contact_person")
-  contactEmail       String?  @map("contact_email")
-  contactPhone       String?  @map("contact_phone")
-  documents          String?  // JSON array string
-  tags               String?  // JSON array string
-  notes              String?
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
-
-  bids               Bid[]
-
-  @@index([status], name: "idx_tenders_status")
-  @@index([submissionDeadline], name: "idx_tenders_deadline")
-  @@index([organization], name: "idx_tenders_org")
-  @@map("tenders")
+    id                 String   @id @default(cuid())
+    tenderNumber       String   @unique
+    title              String
+    authority          String
+    category           String
+    value              Float
+    location           String
+    submissionDeadline DateTime
+    publishDate        DateTime
+    emdAmount          Float?
+    tenderFee          Float?
+    status             String   @default("active")
+    sourcePortal       String   @default("GeM")
+    description        String?
+    documentsCount     Int      @default(0)
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
 }
 
 model Bid {
-  id             String   @id @default(uuid())
-  tenderId       String   @map("tender_id")
-  bidNumber      String   @unique @map("bid_number")
-  bidderName     String   @map("bidder_name")
-  bidValue       Float    @default(0) @map("bid_value")
-  currency       String   @default("INR")
-  submissionDate String   @map("submission_date")
-  status         String   @default("pending") // pending, submitted, won, lost
-  technicalScore Float?   @map("technical_score")
-  financialScore Float?   @map("financial_score")
-  overallScore   Float?   @map("overall_score")
-  isWinning      Boolean  @default(false) @map("is_winning")
-  documents      String?  // JSON array string
-  notes          String?
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  tender         Tender   @relation(fields: [tenderId], references: [id], onDelete: Cascade)
-
-  @@index([tenderId], name: "idx_bids_tender")
-  @@index([status], name: "idx_bids_status")
-  @@map("bids")
+    id                  String   @id @default(cuid())
+    tenderId            String
+    tenderNumber        String
+    tenderTitle         String
+    clientName          String
+    estimatedValue      Float
+    quotedAmount        Float
+    profitMargin        Float?
+    stage               String   @default("drafting")
+    status              String   @default("active")
+    submissionDeadline  DateTime
+    submissionDate      DateTime?
+    teamMembers         String?
+    documentsCount      Int      @default(0)
+    checklistProgress   Float    @default(0)
+    notes               String?
+    createdAt           DateTime @default(now())
+    updatedAt           DateTime @updatedAt
 }
 
 model Vendor {
-  id                 String   @id @default(uuid())
-  name               String
-  registrationNumber String?  @map("registration_number")
-  taxId              String?  @map("tax_id")
-  email              String?
-  phone              String?
-  address            String?
-  city               String?
-  state              String?
-  country            String?  @default("India")
-  pincode            String?
-  contactPerson      String?  @map("contact_person")
-  categories         String?  // JSON array string
-  certifications     String?  // JSON array string
-  rating             Float?   @default(0)
-  status             String   @default("active") // active, inactive, blacklisted
-  notes              String?
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
-
-  @@index([name], name: "idx_vendors_name")
-  @@index([status], name: "idx_vendors_status")
-  @@map("vendors")
-}
-
-model Alert {
-  id        String   @id @default(uuid())
-  title     String
-  message   String
-  severity  String   @default("info") // info, warning, danger, success
-  tenderId  String?  @map("tender_id")
-  isRead    Boolean  @default(false) @map("is_read")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("alerts")
-}
-
-model AutomationRule {
-  id           String    @id @default(uuid())
-  name         String
-  description  String?
-  trigger      String
-  cronSchedule String?   @map("cron_schedule")
-  action       String
-  params       String?   // JSON object string
-  isEnabled    Boolean   @default(true) @map("is_enabled")
-  lastRun      DateTime? @map("last_run")
-  nextRun      DateTime? @map("next_run")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  @@map("automation_rules")
-}
-
-model DataEntrySheet {
-  id            String   @id @default(uuid())
-  name          String
-  tenderId      String?  @map("tender_id")
-  rows          Int      @default(10)
-  cols          Int      @default(6)
-  cells         String   // JSON string of cells matrix
-  columnHeaders String?  @map("column_headers") // JSON array string
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  @@map("data_entry_sheets")
-}
-
-model AppSettings {
-  id                     String   @id @default("default")
-  theme                  String   @default("system")
-  currency               String   @default("INR")
-  timezone               String   @default("Asia/Kolkata")
-  language               String   @default("en")
-  emailNotifications     Boolean  @default(true) @map("email_notifications")
-  desktopNotifications   Boolean  @default(true) @map("desktop_notifications")
-  deadlineReminderHours  Int      @default(24) @map("deadline_reminder_hours")
-  tenderSources          String?  @map("tender_sources") // JSON array string
-  apiKeys                String?  @map("api_keys") // JSON object string
-  createdAt              DateTime @default(now()) @map("created_at")
-  updatedAt              DateTime @updatedAt @map("updated_at")
-
-  @@map("app_settings")
+    id             String   @id @default(cuid())
+    name           String
+    contactPerson  String?
+    email          String?
+    phone          String?
+    category       String
+    rating         Float    @default(5.0)
+    status         String   @default("active")
+    gstin          String?
+    pan            String?
+    address        String?
+    bankDetails    String?
+    materialsCount Int      @default(0)
+    notes          String?
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
 }
 
 model Competitor {
-  id                  String          @id @default(uuid())
-  name                String
-  gstin               String?
-  contactPerson       String?         @map("contact_person")
-  email               String?
-  phone               String?
-  marketStrength      String          @default("medium") @map("market_strength") // dominant, high, medium, low
-  typicalDiscountRate Float           @default(0) @map("typical_discount_rate")
-  historicalWinRate   Float           @default(0) @map("historical_win_rate")
-  bidsSubmittedCount  Int             @default(0) @map("bids_submitted_count")
-  bidsWonCount        Int             @default(0) @map("bids_won_count")
-  notes               String?
-  createdAt           DateTime        @default(now()) @map("created_at")
-  updatedAt           DateTime        @updatedAt @map("updated_at")
-
-  bids                CompetitorBid[]
-
-  @@map("competitors")
+    id                  String   @id @default(cuid())
+    name                String
+    gstin               String?
+    contactPerson       String?
+    email               String?
+    phone               String?
+    marketStrength      String   @default("medium")
+    typicalDiscountRate Float    @default(0)
+    historicalWinRate   Float    @default(0)
+    bidsSubmittedCount  Int      @default(0)
+    bidsWonCount        Int      @default(0)
+    notes               String?
+    createdAt           DateTime @default(now())
+    updatedAt           DateTime @updatedAt
 }
 
 model CompetitorBid {
-  id                   String      @id @default(uuid())
-  tenderId             String      @map("tender_id")
-  tenderNumber         String      @map("tender_number")
-  tenderTitle          String      @map("tender_title")
-  competitorId         String      @map("competitor_id")
-  competitorName       String      @map("competitor_name")
-  quotedPrice          Float       @map("quoted_price")
-  ourPrice             Float       @default(0) @map("our_price")
-  technicalScore       Float       @default(90) @map("technical_score")
-  rank                 String      @default("L2") // L1, L2, L3, L4, Disqualified
-  isWinner             Boolean     @default(false) @map("is_winner")
-  priceVariancePercent Float       @default(0) @map("price_variance_percent")
-  marginSpread         Float       @default(0) @map("margin_spread")
-  notes                String?
-  createdAt            DateTime    @default(now()) @map("created_at")
-  updatedAt            DateTime    @updatedAt @map("updated_at")
-
-  competitor           Competitor  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-
-  @@index([tenderId], name: "idx_comp_bids_tender")
-  @@index([competitorId], name: "idx_comp_bids_competitor")
-  @@map("competitor_bids")
+    id                   String   @id @default(cuid())
+    tenderId             String
+    tenderNumber         String
+    tenderTitle          String
+    competitorId         String
+    competitorName       String
+    quotedPrice          Float
+    ourPrice             Float?
+    technicalScore       Float    @default(90)
+    rank                 String   @default("L2")
+    isWinner             Boolean  @default(false)
+    priceVariancePercent Float    @default(0)
+    marginSpread         Float    @default(0)
+    notes                String?
+    createdAt            DateTime @default(now())
+    updatedAt            DateTime @updatedAt
 }
 
 model BOQItem {
-  id            String               @id @default(uuid())
-  tenderId      String               @map("tender_id")
-  groupName     String               @map("group_name")
-  itemCode      String               @map("item_code")
-  description   String
-  quantity      Float                @default(1)
-  uom           String               @default("Nos")
-  estimatedRate Float                @default(0) @map("estimated_rate")
-  ourQuotedRate Float                @default(0) @map("our_quoted_rate")
-  createdAt     DateTime             @default(now()) @map("created_at")
-  updatedAt     DateTime             @updatedAt @map("updated_at")
-
-  itemRates     CompetitorItemRate[]
-
-  @@index([tenderId], name: "idx_boq_tender")
-  @@map("boq_items")
+    id            String   @id @default(cuid())
+    tenderId      String
+    groupName     String   @default("Schedule A")
+    itemCode      String
+    description   String
+    quantity      Float    @default(1)
+    uom           String   @default("Nos")
+    estimatedRate Float    @default(0)
+    ourQuotedRate Float    @default(0)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
 }
 
 model CompetitorItemRate {
-  id                  String   @id @default(uuid())
-  boqItemId           String   @map("boq_item_id")
-  tenderId            String   @map("tender_id")
-  competitorId        String   @map("competitor_id")
-  competitorName      String   @map("competitor_name")
-  quotedUnitRate      Float    @map("quoted_unit_rate")
-  totalItemAmount     Float    @map("total_item_amount")
-  rateVariancePercent Float    @default(0) @map("rate_variance_percent")
-  isItemL1            Boolean  @default(false) @map("is_item_l1")
-  notes               String?
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+    id             String   @id @default(cuid())
+    boqItemId      String
+    competitorId   String
+    competitorName String
+    quotedUnitRate Float
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+}
 
-  boqItem             BOQItem  @relation(fields: [boqItemId], references: [id], onDelete: Cascade)
+model DataEntrySheet {
+    id            String   @id @default(cuid())
+    name          String
+    description   String?
+    category      String   @default("general")
+    tenderId      String?
+    columnHeaders String
+    cells         String
+    rowCount      Int      @default(0)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+}
 
-  @@index([boqItemId], name: "idx_item_rates_boq")
-  @@map("competitor_item_rates")
+model Alert {
+    id        String   @id @default(cuid())
+    title     String
+    message   String
+    type      String   @default("deadline")
+    isRead    Boolean  @default(false)
+    tenderId  String?
+    createdAt DateTime @default(now())
+}
+
+model AutomationRule {
+    id          String   @id @default(cuid())
+    name        String
+    event       String
+    conditions  String
+    actions     String
+    isEnabled   Boolean  @default(true)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}
+
+model AppSetting {
+    key       String   @id
+    value     String
+    updatedAt DateTime @updatedAt
 }
