@@ -3,7 +3,10 @@ import "./src/lib/env/clientEnv";
 import "./src/lib/env/serverEnv";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'export',
+  images: {
+    unoptimized: true
+  },
   reactCompiler: true,
   typedRoutes: true,
 };

@@ -418,6 +418,10 @@ export function createBrowserBidFly() {
     tender: {
       create: async (data: TenderCreateInput & Record<string, any>) => {
         const list = store.getTenders();
+        const duplicate = list.find(t => t.tenderNumber.trim().toLowerCase() === data.tenderNumber.trim().toLowerCase());
+        if (duplicate) {
+          return { success: false, error: `A tender with reference number "${data.tenderNumber}" already exists.` };
+        }
         const item: Tender = {
           id: generateId(),
           tenderNumber: data.tenderNumber,
@@ -491,6 +495,12 @@ export function createBrowserBidFly() {
         const list = store.getTenders();
         const idx = list.findIndex(t => t.id === data.id);
         if (idx === -1) return { success: false, error: 'Tender not found' };
+        if (data.tenderNumber) {
+          const duplicate = list.find(t => t.id !== data.id && t.tenderNumber.trim().toLowerCase() === data.tenderNumber!.trim().toLowerCase());
+          if (duplicate) {
+            return { success: false, error: `Tender reference "${data.tenderNumber}" is already in use by another tender.` };
+          }
+        }
         const merged: Tender = { ...list[idx], ...data, updatedAt: nowISO() };
         list[idx] = merged;
         store.setTenders(list);
@@ -544,6 +554,10 @@ export function createBrowserBidFly() {
     bid: {
       create: async (data: BidCreateInput & Record<string, any>) => {
         const list = store.getBids();
+        const duplicate = list.find(b => b.tenderId === data.tenderId && b.bidNumber.trim().toLowerCase() === data.bidNumber.trim().toLowerCase());
+        if (duplicate) {
+          return { success: false, error: `Bid proposal "${data.bidNumber}" already exists for this tender.` };
+        }
         const item: Bid = {
           id: generateId(),
           tenderId: data.tenderId,
@@ -596,6 +610,12 @@ export function createBrowserBidFly() {
         const list = store.getBids();
         const idx = list.findIndex(b => b.id === data.id);
         if (idx === -1) return { success: false, error: 'Bid not found' };
+        if (data.bidNumber) {
+          const duplicate = list.find(b => b.id !== data.id && b.tenderId === (data.tenderId || list[idx].tenderId) && b.bidNumber.trim().toLowerCase() === data.bidNumber!.trim().toLowerCase());
+          if (duplicate) {
+            return { success: false, error: `Bid number "${data.bidNumber}" already exists for this tender.` };
+          }
+        }
         const merged: Bid = { ...list[idx], ...data, updatedAt: nowISO() };
         list[idx] = merged;
         store.setBids(list);
@@ -627,6 +647,10 @@ export function createBrowserBidFly() {
       list: async () => ok(store.getEMDs()),
       create: async (data: Omit<EMDRecord, 'id' | 'createdAt' | 'updatedAt'>) => {
         const list = store.getEMDs();
+        const duplicate = list.find(e => e.referenceNumber.trim().toLowerCase() === data.referenceNumber.trim().toLowerCase());
+        if (duplicate) {
+          return { success: false, error: `A guarantee / EMD with reference "${data.referenceNumber}" already exists.` };
+        }
         const item: EMDRecord = {
           id: generateId(),
           ...data,
@@ -641,6 +665,12 @@ export function createBrowserBidFly() {
         const list = store.getEMDs();
         const idx = list.findIndex(e => e.id === id);
         if (idx === -1) return { success: false, error: 'EMD record not found' };
+        if (data.referenceNumber) {
+          const duplicate = list.find(e => e.id !== id && e.referenceNumber.trim().toLowerCase() === data.referenceNumber!.trim().toLowerCase());
+          if (duplicate) {
+            return { success: false, error: `Guarantee reference "${data.referenceNumber}" is already in use.` };
+          }
+        }
         const merged: EMDRecord = { ...list[idx], ...data, updatedAt: nowISO() };
         list[idx] = merged;
         store.setEMDs(list);
@@ -664,6 +694,14 @@ export function createBrowserBidFly() {
     vendor: {
       create: async (data: VendorCreateInput & Record<string, any>) => {
         const list = store.getVendors();
+        const duplicate = list.find(v =>
+          v.name.trim().toLowerCase() === data.name.trim().toLowerCase() ||
+          (data.gstin && v.gstin && v.gstin.trim().toLowerCase() === data.gstin.trim().toLowerCase()) ||
+          (data.taxId && v.taxId && v.taxId.trim().toLowerCase() === data.taxId.trim().toLowerCase())
+        );
+        if (duplicate) {
+          return { success: false, error: `A vendor with name "${data.name}" or GSTIN/Tax ID "${data.gstin || data.taxId}" already exists.` };
+        }
         const item: Vendor = {
           id: generateId(),
           name: data.name,
@@ -890,6 +928,13 @@ export function createBrowserBidFly() {
       list: async () => ok(store.getCompetitors()),
       create: async (data: Omit<Competitor, 'id' | 'createdAt' | 'updatedAt'>) => {
         const list = store.getCompetitors();
+        const duplicate = list.find(c =>
+          c.name.trim().toLowerCase() === data.name.trim().toLowerCase() ||
+          (data.gstin && c.gstin && c.gstin.trim().toLowerCase() === data.gstin.trim().toLowerCase())
+        );
+        if (duplicate) {
+          return { success: false, error: `A competitor with name "${data.name}" or GSTIN "${data.gstin}" already exists.` };
+        }
         const item: Competitor = {
           id: generateId(),
           ...data,
@@ -904,6 +949,12 @@ export function createBrowserBidFly() {
         const list = store.getCompetitors();
         const idx = list.findIndex(c => c.id === id);
         if (idx === -1) return { success: false, error: 'Competitor not found' };
+        if (data.name) {
+          const duplicate = list.find(c => c.id !== id && c.name.trim().toLowerCase() === data.name!.trim().toLowerCase());
+          if (duplicate) {
+            return { success: false, error: `Competitor name "${data.name}" already belongs to another competitor.` };
+          }
+        }
         const merged: Competitor = { ...list[idx], ...data, updatedAt: nowISO() };
         list[idx] = merged;
         store.setCompetitors(list);
@@ -921,6 +972,10 @@ export function createBrowserBidFly() {
       },
       createBid: async (data: Omit<CompetitorBid, 'id' | 'createdAt' | 'updatedAt'>) => {
         const list = store.getCompetitorBids();
+        const duplicate = list.find(b => b.tenderId === data.tenderId && b.competitorId === data.competitorId);
+        if (duplicate) {
+          return { success: false, error: `A quote for "${data.competitorName}" has already been logged for this tender.` };
+        }
         const ourPrice = data.ourPrice ?? 0;
         const variance = ourPrice > 0 ? Number((((data.quotedPrice - ourPrice) / ourPrice) * 100).toFixed(2)) : 0;
         const margin = Number((data.quotedPrice - ourPrice).toFixed(2));
@@ -949,6 +1004,10 @@ export function createBrowserBidFly() {
       },
       createBOQItem: async (data: Omit<BOQItem, 'id' | 'createdAt' | 'updatedAt'>) => {
         const list = store.getBOQItems();
+        const duplicate = list.find(i => i.tenderId === data.tenderId && i.itemCode.trim().toLowerCase() === data.itemCode.trim().toLowerCase());
+        if (duplicate) {
+          return { success: false, error: `BOQ item code "${data.itemCode}" already exists for this tender.` };
+        }
         const item: BOQItem = {
           id: generateId(),
           ...data,

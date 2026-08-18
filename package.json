@@ -3,14 +3,22 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
+  "main": "electron/main.cjs",
+  "description": "BidFly - Enterprise Bid & Tender Management Suite | Developed by Tamal Roy Chowdhury",
+  "author": "Tamal Roy Chowdhury",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "export": "prisma generate && next build",
     "start": "next start",
     "lint": "next typegen && tsc --noEmit && eslint",
     "prod": "prisma generate && next build && next start",
     "migrate": "prisma migrate dev && prisma generate",
-    "studio": "prisma studio --browser none"
+    "studio": "prisma studio --browser none",
+    "build:electron": "npm run export && electron-builder --win nsis",
+    "build:portable": "npm run export && electron-builder --win portable",
+    "build:unpacked": "npm run export && electron-builder --dir",
+    "build:all-exe": "npm run export && electron-builder --win nsis portable --dir"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -60,6 +68,8 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "^1.0.0",
+    "electron": "33.4.11",
+    "electron-builder": "^25.1.8",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.11",
     "postcss": "^8.4.49",
@@ -68,5 +78,54 @@
     "prisma": "^7.9.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
+  },
+  "build": {
+    "appId": "com.tamalroychowdhury.bidfly",
+    "productName": "BidFly",
+    "copyright": "Copyright © 2026 Tamal Roy Chowdhury",
+    "electronVersion": "33.4.11",
+    "npmRebuild": false,
+    "forceCodeSigning": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/main.cjs",
+      "out/**/*",
+      "build/icon.ico",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "legalTrademarks": "BidFly by Tamal Roy Chowdhury",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": false,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "BidFly",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "BidFly-v2.0.0-Setup.exe"
+    },
+    "portable": {
+      "artifactName": "BidFly-v2.0.0-Portable.exe",
+      "requestExecutionLevel": "user"
+    }
   }
 }

@@ -142,10 +142,11 @@ export default function VendorsPage() {
           return
         }
         let count = 0
+        let skipped = 0
         for (let i = 1; i < lines.length; i++) {
           const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim())
           if (cols[0] && window.bidfly?.vendor) {
-            await window.bidfly.vendor.create({
+            const res = await window.bidfly.vendor.create({
               name: cols[0],
               registrationNumber: cols[1] || '',
               taxId: cols[2] || '',
@@ -163,10 +164,18 @@ export default function VendorsPage() {
               pincode: '',
               certifications: []
             })
-            count++
+            if (res.success) {
+              count++
+            } else {
+              skipped++
+            }
           }
         }
-        addToast({ title: `Imported ${count} vendors successfully`, variant: 'success' })
+        if (skipped > 0) {
+          addToast({ title: `Imported ${count} vendors (${skipped} duplicates skipped)`, variant: 'warning' })
+        } else {
+          addToast({ title: `Imported ${count} vendors successfully`, variant: 'success' })
+        }
         load()
       } catch (err) {
         addToast({ title: 'Failed to parse CSV', variant: 'error' })

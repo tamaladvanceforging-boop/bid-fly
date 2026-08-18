@@ -143,10 +143,25 @@ export default function CompetitorsPage() {
       return
     }
 
+    const trimmedName = compName.trim()
+    const trimmedGstin = compGstin.trim()
+    const duplicate = competitors.find(c =>
+      c.name.trim().toLowerCase() === trimmedName.toLowerCase() ||
+      (trimmedGstin && c.gstin && c.gstin.trim().toLowerCase() === trimmedGstin.toLowerCase())
+    )
+    if (duplicate) {
+      addToast({
+        title: 'Duplicate Competitor Blocked',
+        description: `A competitor with name "${trimmedName}" or GSTIN "${trimmedGstin}" already exists in database.`,
+        variant: 'error'
+      })
+      return
+    }
+
     const newComp: Competitor = {
       id: `comp-${Date.now()}`,
-      name: compName.trim(),
-      gstin: compGstin.trim(),
+      name: trimmedName,
+      gstin: trimmedGstin,
       contactPerson: compContact.trim(),
       email: compEmail.trim(),
       phone: compPhone.trim(),
@@ -191,12 +206,23 @@ export default function CompetitorsPage() {
       return
     }
 
+    const targetTenderId = tenderObj?.id || bidTenderId
+    const duplicate = competitorBids.find(b => b.tenderId === targetTenderId && b.competitorId === compObj.id)
+    if (duplicate) {
+      addToast({
+        title: 'Duplicate Competitor Quote Blocked',
+        description: `A price quote for "${compObj.name}" is already recorded for this tender.`,
+        variant: 'error'
+      })
+      return
+    }
+
     const variance = oPrice > 0 ? (((qPrice - oPrice) / oPrice) * 100) : 0
     const spread = Math.abs(qPrice - oPrice)
 
     const newBidEntry: CompetitorBid = {
       id: `cb-${Date.now()}`,
-      tenderId: tenderObj?.id || bidTenderId,
+      tenderId: targetTenderId,
       tenderNumber: tenderObj?.tenderNumber || (bidTenderId ? `TND-${bidTenderId.slice(-6)}` : 'TND-REF'),
       tenderTitle: tenderObj?.title || 'Tender Opportunity',
       competitorId: compObj.id,

@@ -155,6 +155,18 @@ export default function TenderManagementSheet() {
   // Handlers
   const handleCellEdit = (id: string, field: keyof TenderRowItem, value: any) => {
     const target = rows.find(r => r.id === id)
+    if (field === 'tenderId') {
+      const trimmed = String(value).trim()
+      const duplicate = rows.find(r => r.id !== id && r.tenderId.trim().toLowerCase() === trimmed.toLowerCase())
+      if (duplicate) {
+        addToast({
+          title: 'Duplicate Tender ID Blocked',
+          description: `Tender ID "${trimmed}" is already used in row #${duplicate.slNo}. Duplicate entry rejected.`,
+          variant: 'error'
+        })
+        return
+      }
+    }
     const updated = rows.map(r => {
       if (r.id === id) {
         return { ...r, [field]: value }
@@ -179,6 +191,17 @@ export default function TenderManagementSheet() {
       return
     }
 
+    const trimmedId = newRow.tenderId.trim()
+    const duplicate = rows.find(r => r.tenderId.trim().toLowerCase() === trimmedId.toLowerCase())
+    if (duplicate) {
+      addToast({
+        title: 'Duplicate Tender ID Blocked',
+        description: `Tender ID "${trimmedId}" already exists in datasheet (Row #${duplicate.slNo}). Duplicates are not allowed.`,
+        variant: 'error'
+      })
+      return
+    }
+
     let targetDivision = newRow.division || ''
     if ((companies.length === 0 || createCompanyInline || !targetDivision) && inlineCompCode.trim()) {
       const code = inlineCompCode.trim().toUpperCase()
@@ -195,10 +218,10 @@ export default function TenderManagementSheet() {
       id: 'row-' + Date.now(),
       slNo: rows.length > 0 ? Math.max(...rows.map(r => r.slNo)) + 1 : 1,
       division: targetDivision || 'DEFAULT',
-      tenderId: newRow.tenderId,
+      tenderId: trimmedId,
       portal: newRow.portal || 'GeM',
       departmentName: newRow.departmentName || 'Authority / Client',
-      tenderTitle: newRow.tenderTitle,
+      tenderTitle: newRow.tenderTitle.trim(),
       startDate: newRow.startDate || '',
       endDate: newRow.endDate || '',
       daysLeft: newRow.daysLeft || '7',
@@ -248,9 +271,18 @@ export default function TenderManagementSheet() {
 
   const handleAddNewCompany = () => {
     if (!newCompCode.trim() || !newCompName.trim()) return
-    addCompany(newCompCode, newCompName)
+    const code = newCompCode.trim().toUpperCase()
+    if (companies.some(c => c.code === code)) {
+      addToast({
+        title: 'Duplicate Company Code',
+        description: `A company with code "${code}" already exists in your entity list.`,
+        variant: 'error'
+      })
+      return
+    }
+    addCompany(code, newCompName.trim())
     setAddCompanyOpen(false)
-    logActivity('CREATE', 'Datasheet', newCompCode, `Added client entity profile: ${newCompName}`)
+    logActivity('CREATE', 'Datasheet', code, `Added client entity profile: ${newCompName.trim()}`)
     setNewCompCode('')
     setNewCompName('')
     addToast({ title: 'Company / Client added', description: newCompName, variant: 'success' })

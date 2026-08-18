@@ -126,8 +126,9 @@ function BidsPageContent() {
     const tObj = tenders.find(t => t.id === emdTenderId) || tenders[0];
     if (!tObj || !window.bidfly?.emd) return;
 
+    let res: any;
     if (selectedEMD) {
-      await window.bidfly.emd.update(selectedEMD.id, {
+      res = await window.bidfly.emd.update(selectedEMD.id, {
         amount: emdAmount,
         mode: emdMode,
         bankName: emdBank,
@@ -135,9 +136,8 @@ function BidsPageContent() {
         expiryDate: emdExpiryDate,
         status: emdStatus
       });
-      addToast({ title: 'Guarantee Updated', description: emdRef, variant: 'success' });
     } else {
-      await window.bidfly.emd.create({
+      res = await window.bidfly.emd.create({
         tenderId: tObj.id,
         tenderNumber: tObj.tenderNumber,
         tenderTitle: tObj.title,
@@ -150,12 +150,24 @@ function BidsPageContent() {
         expiryDate: emdExpiryDate,
         status: emdStatus
       });
-      addToast({ title: 'EMD Guarantee Recorded', description: `₹${emdAmount.toLocaleString()} via ${emdMode}`, variant: 'success' });
     }
 
-    setEmdModalOpen(false);
-    setSelectedEMD(null);
-    load();
+    if (res?.success) {
+      addToast({
+        title: selectedEMD ? 'Guarantee Updated' : 'EMD Guarantee Recorded',
+        description: `Ref: ${emdRef}`,
+        variant: 'success'
+      });
+      setEmdModalOpen(false);
+      setSelectedEMD(null);
+      load();
+    } else {
+      addToast({
+        title: 'Validation / Duplicate Error',
+        description: res?.error || 'Failed to save EMD guarantee.',
+        variant: 'error'
+      });
+    }
   };
 
   // 4 Summary Metrics (Section 4 & 5 of User Manual)
