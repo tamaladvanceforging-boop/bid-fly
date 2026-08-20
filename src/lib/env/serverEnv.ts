@@ -5,12 +5,10 @@ export const serverEnv = createEnv({
   server: {
     DATABASE_URL: z
       .string()
-      .startsWith("file:./", {
-        error: "DATABASE_URL must start with file:./",
-      })
-      .min(1, { error: "DATABASE_URL is required" }),
-    NEXT_TELEMETRY_DISABLED: z.enum(["1", "0"]).optional(),
-    CHECKPOINT_DISABLE: z.enum(["1", "0"]).optional(),
+      .default("file:./database/bidfly.db"),
+    NEXT_TELEMETRY_DISABLED: z.enum(["1", "0"]).default("1"),
+    CHECKPOINT_DISABLE: z.enum(["1", "0"]).default("1"),
   },
   experimental__runtimeEnv: process.env,
+  emptyStringAsUndefined: true,
 });
