@@ -31,7 +31,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   // If user is NOT authenticated, default directly to the futuristic Welcome / Landing page
   if (!isAuthenticated || isAuthPage) {
     return (
-      <div className="relative min-h-screen w-screen overflow-x-hidden bg-[#090d16] text-foreground select-text">
+      <div className="dark relative min-h-screen w-screen overflow-x-hidden bg-[#090d16] text-foreground select-text">
         <main className="relative z-10 min-h-screen">
           <WelcomePage />
         </main>

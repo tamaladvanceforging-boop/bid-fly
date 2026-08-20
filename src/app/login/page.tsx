@@ -235,7 +235,7 @@ export default function WelcomePage() {
       {/* Top Navbar */}
       <header className="border-b border-white/[0.08] bg-[#090d16]/70 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <BidFlyLogo size="lg" subtitle="Universal Tender Management & Datasheet Automation" />
+          <BidFlyLogo size="lg" subtitle="Universal Tender Management & Datasheet Automation" lightText={true} />
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-mono">

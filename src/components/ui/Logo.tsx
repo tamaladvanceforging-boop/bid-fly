@@ -8,9 +8,10 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showText?: boolean;
   subtitle?: string;
+  lightText?: boolean; // Set true for dark backgrounds
 }
 
-export function BidFlyLogo({ className, size = 'md', showText = true, subtitle }: LogoProps) {
+export function BidFlyLogo({ className, size = 'md', showText = true, subtitle, lightText }: LogoProps) {
   const sizeClasses = {
     sm: 'h-7 w-7 text-xs rounded-lg',
     md: 'h-9 w-9 text-sm rounded-xl',
@@ -87,20 +88,26 @@ export function BidFlyLogo({ className, size = 'md', showText = true, subtitle }
       {showText && (
         <div className="flex flex-col justify-center min-w-0">
           <div className="flex items-center gap-1.5 leading-none">
-            {/* High-Contrast "Bid" and Vibrant "Fly" */}
+            {/* Crystal Clear "Bid" and Vibrant "Fly" */}
             <span className={cn("font-black tracking-tight flex items-center leading-none", textSizes[size])}>
-              <span className="text-slate-900 dark:text-white drop-shadow-xs">
+              <span className={cn(
+                "font-black drop-shadow-sm transition-colors",
+                lightText ? "text-white" : "text-foreground dark:text-white"
+              )}>
                 Bid
               </span>
-              <span className="bg-gradient-to-r from-blue-500 via-indigo-400 to-cyan-400 bg-clip-text text-transparent ml-[1px]">
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-400 bg-clip-text text-transparent ml-[1.5px] font-black">
                 Fly
               </span>
             </span>
-            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30 leading-none shadow-xs">
+            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-blue-500/20 text-cyan-300 border border-cyan-500/30 leading-none shadow-xs">
               PRO
             </span>
           </div>
-          <p className="text-[10px] font-semibold text-muted-foreground/90 mt-1 truncate leading-tight tracking-tight">
+          <p className={cn(
+            "text-[10px] font-semibold mt-1 truncate leading-tight tracking-tight",
+            lightText ? "text-slate-400" : "text-muted-foreground"
+          )}>
             {subtitle || 'Enterprise Bid & Tender Suite'}
           </p>
         </div>
